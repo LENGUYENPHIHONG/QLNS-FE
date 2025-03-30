@@ -1,0 +1,38 @@
+/* src/InfoCard/infocard.css */
+.card {
+    max-width: 270px !important; /* Độ rộng tối thiểu */
+    border-radius: 12px !important ; /* Bo góc */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2) !important; /* Đổ bóng */
+    transition: transform 0.2s !important; /* Hiệu ứng hover */
+    color: white !important;
+    animation: fadeIn 0.5s ease-in-out !important;
+  }
+  
+  .card:hover {
+    transform: scale(1.05) !important; /* Phóng to khi hover */
+  }
+  
+  .title {
+    font-size: 1.75rem !important;
+    font-weight: bold !important; 
+    display: flex !important;
+    align-items: center !important; /* Căn giữa icon và text */
+    gap: 8px !important; /* Khoảng cách giữa icon và text */
+  }
+  
+  .value {
+    font-size: 2rem !important;
+    align-items: center !important;
+    font-weight: bold !important;
+    margin-top: 12px !important; /* Khoảng cách giữa title và value */
+  }
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }

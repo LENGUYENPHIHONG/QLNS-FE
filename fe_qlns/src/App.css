@@ -1,38 +1,58 @@
-.App {
-  text-align: center;
+@import url("https://fonts.googleapis.com/css2?family=Open+Sans:ital,wght@0,300..800;1,300..800&display=swap");
+
+html {
+    font-size: 62.5%;
+}
+body {
+    font-family: "Open Sans", sans-serif;
+    background: #d5dfeb;
+    font-size: 1.6rem;
 }
 
-.App-logo {
-  height: 40vmin;
-  pointer-events: none;
+.sidebarWrapper {
+    width: 19%;
+    flex: 0 0 19%;
+    transition: all 0.3s ease-in-out;
 }
 
-@media (prefers-reduced-motion: no-preference) {
-  .App-logo {
-    animation: App-logo-spin infinite 20s linear;
-  }
+.content {
+    flex: 0 0 82%;
+    transition: all 0.3s;
+    width: 82%;
+}
+.right-content {
+    padding: 90px 30px 10px;    
+}
+.custom-menu .ant-menu-item,
+.custom-menu .ant-menu-submenu-title {
+  font-size: 14px !important; /* Tăng cỡ chữ cho các mục chính */
+  height: 50px !important; /* Tăng chiều cao của mục */
+  line-height: 50px !important; /* Căn giữa chữ theo chiều dọc */
 }
 
-.App-header {
-  background-color: #282c34;
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  font-size: calc(10px + 2vmin);
-  color: white;
+.custom-menu .ant-menu-item a,
+.custom-menu .ant-menu-submenu-title span {
+  font-weight: 500; /* Làm chữ đậm hơn một chút */
 }
 
-.App-link {
-  color: #61dafb;
+/* Tùy chỉnh cỡ chữ cho các mục con trong SubMenu */
+.custom-menu .ant-menu-sub .ant-menu-item {
+  font-size: 13px !important; /* Tăng cỡ chữ cho các mục con */
+  height: 40px !important;
+  line-height: 45px !important;
 }
 
-@keyframes App-logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
+/* Tùy chỉnh khoảng cách giữa icon và chữ */
+.custom-menu .ant-menu-item .anticon,
+.custom-menu .ant-menu-submenu-title .anticon {
+  margin-right: 10px !important; /* Tăng khoảng cách giữa icon và chữ */
 }
+.custom-menu .ant-menu-item a,
+.custom-menu .ant-menu-submenu-title a {
+  text-decoration: none !important; /* Xóa dấu gạch chân */
+}
+
+/* Đảm bảo không có dấu gạch chân khi hover */
+.custom-menu .ant-menu-item a:hover,
+.custom-menu .ant-menu-submenu-title a:hover {
+  text-decoration: none !important;}

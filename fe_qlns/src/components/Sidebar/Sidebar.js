@@ -1,0 +1,180 @@
+import React, { useEffect, useState } from "react";
+import { Layout, Menu } from "antd";
+import {
+  DashboardOutlined,
+  UserOutlined,
+  FileTextOutlined,
+  CalendarOutlined,
+  AppstoreOutlined,
+} from "@ant-design/icons";
+import { Link, useLocation } from "react-router-dom";
+
+
+
+const { Sider } = Layout;
+const { SubMenu } = Menu;
+
+const Sidebar = ({ collapsed, onToggle }) => {
+  const location = useLocation();
+  const [selectedKey, setSelectedKey] = useState("");
+  const [openKeys, setOpenKeys] = useState([]);
+
+  // Cập nhật trạng thái active dựa trên đường dẫn hiện tại
+  useEffect(() => {
+    const path = location.pathname;
+    setSelectedKey(path);
+    if (path.includes("/themnhanvien") || path.includes("/danhsachnhanvien")) {
+      setOpenKeys(["user"]);
+    } else if (path.includes("/themhopdong") || path.includes("/danhsachhopdong")) {
+      setOpenKeys(["contract"]);
+    } else if (path.includes("/dangkinghiphep") || path.includes("/lichsunghiphep")) {
+      setOpenKeys(["leave"]);
+    } else if (
+      path.includes("/phongban") ||
+      path.includes("/bangcap") ||
+      path.includes("/chucvu") ||
+      path.includes("/trinhdo") ||
+      path.includes("/loainhanvien") ||
+      path.includes("/loainghiphep") ||
+      path.includes("/lichlamviec")
+    ) {
+      setOpenKeys(["category"]);
+    } else {
+      setOpenKeys([]);
+    }
+  }, [location.pathname]);
+
+  const onOpenChange = (keys) => {
+    setOpenKeys(keys);
+  };
+
+  return (
+    <Sider
+      collapsible
+      collapsed={collapsed}
+      onCollapse={onToggle}
+      width={250}
+      style={{
+        backgroundColor: "#fff",
+        position: "fixed",
+        left: 0,
+        top: 0,
+        bottom: 0,
+        zIndex: 1001,
+        overflowY: "auto",
+        paddingTop: "5px", // Chừa khoảng trống cho header
+      }}
+    >
+      {/* Logo */}
+      <div
+        style={{
+          padding: "20px",
+          textAlign: "center",
+          background: "#fff",
+          borderBottom: "1px solid #f0f0f0",
+        }}
+      >
+        {collapsed ? (
+          <span style={{ fontSize: "20px", fontWeight: "bold", color: "#000" }}>
+            HR
+          </span>
+        ) : (
+          <span style={{ fontSize: "20px", fontWeight: "bold", color: "#000" }}>
+            HR Management
+          </span>
+        )}
+      </div>
+
+      {/* Menu */}
+      <Menu
+        mode="inline"
+        selectedKeys={[selectedKey]}
+        openKeys={openKeys}
+        onOpenChange={onOpenChange}
+        style={{ borderRight: 0 }}
+        className="custom-menu" // Thêm class để tùy chỉnh CSS
+      >
+        {/* Tổng quan */}
+        <Menu.Item
+          key="/dashboard"
+          icon={<DashboardOutlined style={{ fontSize: "24px" }} />}
+        >
+          <Link to="/dashboard">Tổng quan</Link>
+        </Menu.Item>
+
+        {/* Nhân viên */}
+        <SubMenu
+          key="user"
+          icon={<UserOutlined style={{ fontSize: "24px" }} />}
+          title="Nhân viên"
+        >
+          <Menu.Item key="/themnhanvien">
+            <Link to="/themnhanvien">Thêm nhân viên</Link>
+          </Menu.Item>
+          <Menu.Item key="/danhsachnhanvien">
+            <Link to="/danhsachnhanvien">Danh sách nhân viên</Link>
+          </Menu.Item>
+        </SubMenu>
+
+        {/* Hợp đồng */}
+        <SubMenu
+          key="contract"
+          icon={<FileTextOutlined style={{ fontSize: "24px" }} />}
+          title="Hợp đồng"
+        >
+          <Menu.Item key="/themhopdong">
+            <Link to="/themhopdong">Thêm hợp đồng</Link>
+          </Menu.Item>
+          <Menu.Item key="/danhsachhopdong">
+            <Link to="/danhsachhopdong">Danh sách hợp đồng</Link>
+          </Menu.Item>
+        </SubMenu>
+
+        {/* Nghỉ phép */}
+        <SubMenu
+          key="leave"
+          icon={<CalendarOutlined style={{ fontSize: "24px" }} />}
+          title="Nghỉ phép"
+        >
+          <Menu.Item key="/dangkinghiphep">
+            <Link to="/dangkinghiphep">Đăng ký nghỉ phép</Link>
+          </Menu.Item>
+          <Menu.Item key="/lichsunghiphep">
+            <Link to="/lichsunghiphep">Lịch sử nghỉ phép</Link>
+          </Menu.Item>
+        </SubMenu>
+
+        {/* Danh mục */}
+        <SubMenu
+          key="category"
+          icon={<AppstoreOutlined style={{ fontSize: "24px" }} />}
+          title="Danh mục"
+        >
+          <Menu.Item key="/phongban">
+            <Link to="/phongban">Phòng ban</Link>
+          </Menu.Item>
+          <Menu.Item key="/bangcap">
+            <Link to="/bangcap">Bằng cấp</Link>
+          </Menu.Item>
+          <Menu.Item key="/chucvu">
+            <Link to="/chucvu">Chức vụ</Link>
+          </Menu.Item>
+          <Menu.Item key="/trinhdo">
+            <Link to="/trinhdo">Trình độ</Link>
+          </Menu.Item>
+          <Menu.Item key="/loainhanvien">
+            <Link to="/loainhanvien">Loại nhân viên</Link>
+          </Menu.Item>
+          <Menu.Item key="/loainghiphep">
+            <Link to="/loainghiphep">Loại nghỉ phép</Link>
+          </Menu.Item>
+          <Menu.Item key="/lichlamviec">
+            <Link to="/lichlamviec">Lịch làm việc</Link>
+          </Menu.Item>
+        </SubMenu>
+      </Menu>
+    </Sider>
+  );
+};
+
+export default Sidebar;
