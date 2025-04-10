@@ -53,7 +53,7 @@ const Sidebar = ({ collapsed, onToggle }) => {
       collapsible
       collapsed={collapsed}
       onCollapse={onToggle}
-      width={250}
+      width={220}
       style={{
         backgroundColor: "#fff",
         position: "fixed",
@@ -62,25 +62,25 @@ const Sidebar = ({ collapsed, onToggle }) => {
         bottom: 0,
         zIndex: 1001,
         overflowY: "auto",
-        paddingTop: "5px", // Chừa khoảng trống cho header
+        paddingTop: "25px", // Chừa khoảng trống cho header
       }}
     >
       {/* Logo */}
       <div
         style={{
-          padding: "20px",
+          padding: "11px",
           textAlign: "center",
           background: "#fff",
           borderBottom: "1px solid #f0f0f0",
         }}
       >
         {collapsed ? (
-          <span style={{ fontSize: "20px", fontWeight: "bold", color: "#000" }}>
+          <span style={{ fontSize: "18px", fontWeight: "bold", color: "#000" }}>
             HR
           </span>
         ) : (
-          <span style={{ fontSize: "20px", fontWeight: "bold", color: "#000" }}>
-            HR Management
+          <span style={{ fontSize: "18px", fontWeight: "bold", color: "#000" }}>
+            HR 
           </span>
         )}
       </div>
@@ -159,6 +159,9 @@ const Sidebar = ({ collapsed, onToggle }) => {
           <Menu.Item key="/chucvu">
             <Link to="/chucvu">Chức vụ</Link>
           </Menu.Item>
+          <Menu.Item key="/loaichuyenmon">
+            <Link to="/loaichuyenmon">Chuyên môn</Link>
+          </Menu.Item>
           <Menu.Item key="/trinhdo">
             <Link to="/trinhdo">Trình độ</Link>
           </Menu.Item>
@@ -171,6 +174,10 @@ const Sidebar = ({ collapsed, onToggle }) => {
           <Menu.Item key="/lichlamviec">
             <Link to="/lichlamviec">Lịch làm việc</Link>
           </Menu.Item>
+          <Menu.Item key="/loaihopdong">
+            <Link to="/loaihopdong">Loại hợp đồng</Link>
+          </Menu.Item>
+          
         </SubMenu>
       </Menu>
     </Sider>

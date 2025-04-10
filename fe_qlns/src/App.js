@@ -14,8 +14,12 @@ import WorkScheduleList from "./pages/WorkScheduleList/Schedule";
 import WorkScheduleDetail from "./pages/WorkScheduleDetail/WorkScheduleDetail";
 import PositionManagement from "./components/Category/PositionManagement/PositionManagement";
 import DepartmentManagement from "./components/Category/Departments/departments";
+import LeaveTypeManagement from "./components/Category/LeaveTypeManagement/LeaveTypeManagement";
+import DegreeManagement from "./components/Category/DegreeManagement/DegreeManagement";
+import ContractTypeManagement from "./components/Category/ContractTypeManagement/ContractTypeManagement";
+import SpecializationManagement from "./components/Category/SpecializationManagement/SpecializationManagement";
 import ContractManagement from "./pages/Contract/Contract";
-import LeaveManagement from "./pages/Leave/LeaveManagement";
+import LeaveRequestManagement from "./pages/Leave/LeaveManagement";
 import LeaveHistory from "./pages/Leave/LeaveHistory";
 import EducationLevelManagement from "./components/Category/EducationLevel/EducationLevelManagement";
 import EmployeeTypeManagement from "./components/Category/EmployeeType/EmployeeTypeManagement";
@@ -36,7 +40,7 @@ function App() {
         <Sidebar collapsed={collapsed} onToggle={toggleSidebar} />
 
         {/* Nội dung chính */}
-        <Layout style={{ marginLeft: collapsed ? 80 : 250, transition: "margin-left 0.2s" }}>
+        <Layout style={{ marginLeft: collapsed ? 80 : 220, transition: "margin-left 0.2s" }}>
           {/* Header */}
           <Header onToggleSidebar={toggleSidebar} collapsed={collapsed} />
 
@@ -55,12 +59,16 @@ function App() {
               <Route path="/danhsachnhanvien" exact element={<EmployeeListPage />} />
               <Route path="/chucvu" exact element={<PositionManagement />} />
               <Route path="/danhsachhopdong" exact element={<ContractManagement />} />
-              <Route path="/dangkinghiphep" exact element={<LeaveManagement />} />
+              <Route path="/dangkinghiphep" exact element={<LeaveRequestManagement />} />
               <Route path="/lichsunghiphep" exact element={<LeaveHistory />} />
               <Route path="/phongban" exact element={<DepartmentManagement />} />
               <Route path="/trinhdo" exact element={<EducationLevelManagement />} />
+              <Route path="/bangcap" exact element={<DegreeManagement />} />
               <Route path="/loainhanvien" exact element={<EmployeeTypeManagement />} />
+              <Route path="/loainghiphep" exact element={<LeaveTypeManagement />} />
               <Route path="/lichlamviec" exact element={<WorkScheduleList />} />
+              <Route path="/loaihopdong" exact element={<ContractTypeManagement />} />
+              <Route path="/loaichuyenmon" exact element={<SpecializationManagement />} />
               <Route path="/lichlamviec/id" exact element={<WorkScheduleDetail />} />
             </Routes>
           </Content>

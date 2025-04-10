@@ -1,163 +1,268 @@
-import React, { useState } from "react";
-import { FaSearch } from "react-icons/fa";
-import "./EducationLevelManagement.css";
+import React, { useState, useEffect } from "react";
+import {
+  Layout, Form, Input, Button, Table, Space, Modal, message
+} from "antd";
+import {
+  SearchOutlined, EditOutlined, DeleteOutlined
+} from "@ant-design/icons";
+import {
+  fetchEducationLevels,
+  createEducationLevel,
+  updateEducationLevel,
+  deleteEducationLevel,
+  getNewEducationCode
+} from "../../../api/educationApi";
+
+const { Content } = Layout;
 
 const EducationLevelManagement = () => {
-  const [educationCode, setEducationCode] = useState("");
-  const [educationName, setEducationName] = useState("");
-  const [searchTerm, setSearchTerm] = useState("");
-  const [filter, setFilter] = useState("");
-  const [message, setMessage] = useState("");
+  const [form] = Form.useForm();
+  const [editForm] = Form.useForm();
   const [educationLevels, setEducationLevels] = useState([]);
+  const [filteredLevels, setFilteredLevels] = useState([]);
+  const [searchTerm, setSearchTerm] = useState("");
   const [loading, setLoading] = useState(false);
+  const [editing, setEditing] = useState(false);
+  const [editingItem, setEditingItem] = useState(null);
 
-  const handleAddEducationLevel = (e) => {
-    e.preventDefault();
-    if (!educationCode || !educationName) {
-      setMessage("Vui lòng điền đầy đủ thông tin");
+  useEffect(() => {
+    loadLevels();
+    generateNewCode();
+    message.error("Test lỗi popup");
+  }, []);
+
+  useEffect(() => {
+    if (!searchTerm) {
+      setFilteredLevels(educationLevels);
       return;
     }
-    setLoading(true);
-    setTimeout(() => {
-      const newEducationLevel = {
-        id: Date.now(),
-        educationCode,
-        educationName,
-      };
-      setEducationLevels([...educationLevels, newEducationLevel]);
-      setMessage("Thêm thành công!");
-      setEducationCode("");
-      setEducationName("");
-      setLoading(false);
-    }, 1000);
-  };
-
-  const handleSearch = () => {
+    const lower = searchTerm.toLowerCase();
     const filtered = educationLevels.filter(
-      (level) =>
-        level.educationCode.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        level.educationName.toLowerCase().includes(searchTerm.toLowerCase())
+      (item) =>
+        item.educationCode.toLowerCase().includes(lower) ||
+        item.educationName.toLowerCase().includes(lower)
     );
-    setEducationLevels(filtered);
-    console.log("Tìm kiếm với:", searchTerm);
+    setFilteredLevels(filtered);
+  }, [searchTerm, educationLevels]);
+
+  const generateNewCode = async () => {
+    try {
+      const res = await getNewEducationCode();
+      if (res.data?.code) {
+        form.setFieldsValue({ educationCode: res.data.code });
+      }
+    } catch (err) {
+      message.error("Không thể tạo mã trình độ mới.");
+    }
   };
 
-  const handleFilter = (e) => {
-    setFilter(e.target.value);
-    console.log("Lọc với:", e.target.value);
-  };
-
-  const handleDelete = (id) => {
+  const loadLevels = async () => {
     setLoading(true);
-    setTimeout(() => {
-      setEducationLevels(educationLevels.filter((level) => level.id !== id));
-      setMessage("Xóa thành công!");
+    try {
+      const res = await fetchEducationLevels();
+      if (res.data?.Data && Array.isArray(res.data.Data)) {
+        const list = res.data.Data.map((item) => ({
+          id: item.MATD,
+          educationCode: item.MATD,
+          educationName: item.TENTD,
+        }));
+        setEducationLevels(list);
+        setFilteredLevels(list);
+      } else {
+        setEducationLevels([]);
+        setFilteredLevels([]);
+        message.warning("Không có dữ liệu trình độ.");
+      }
+    } catch (err) {
+      message.error("Lỗi khi tải danh sách trình độ.");
+    } finally {
       setLoading(false);
-    }, 1000);
+    }
   };
 
-  const handleEdit = (id) => {
-    console.log("Chỉnh sửa trình độ:", id);
+  const handleAddEducationLevel = async (values) => {
+    setLoading(true);
+    try {
+      const data = {
+        MATD: values.educationCode,
+        TENTD: values.educationName,
+      };
+  
+      const res = await createEducationLevel(data);
+  
+      if (res.data?.Success) {
+        alert("Thêm trình độ thành công!");
+        form.resetFields();
+        await loadLevels(); // reload danh sách
+        await generateNewCode(); // tạo mã mới sau khi thêm
+      } else {
+        alert(res.data?.Message || "Thêm thất bại.");
+      }
+    } catch (error) {
+      console.error("❌ Lỗi từ API:", error);
+      alert(error.response?.data?.Message || "Đã xảy ra lỗi khi thêm trình độ.");
+    } finally {
+      setLoading(false);
+    }
   };
+  
+  
+  const handleEdit = (record) => {
+    setEditing(true);
+    setEditingItem(record);
+    editForm.setFieldsValue({
+      educationCode: record.educationCode,
+      educationName: record.educationName,
+    });
+  };
+
+  const handleUpdate = async () => {
+    try {
+      const values = await editForm.validateFields();
+      const payload = {
+        MATD: editingItem.id,
+        TENTD: values.educationName,
+      };
+      const res = await updateEducationLevel(payload);
+      if (res.data?.Success || res.data?.MA) {
+        message.success("Cập nhật thành công!");
+        setEditing(false);
+        await loadLevels();
+      } else {
+        message.error(res.data?.Message || "Cập nhật thất bại.");
+      }
+    } catch (err) {
+      message.error("Lỗi khi cập nhật.");
+    }
+  };
+
+  const handleDelete = async (id) => {
+    try {
+      const res = await deleteEducationLevel({ MATD: id });
+      if (res.data?.Success) {
+        message.success("Xóa thành công!");
+        await loadLevels();
+      } else {
+        message.error(res.data?.Message || "Xóa thất bại.");
+      }
+    } catch (err) {
+      message.error("Lỗi khi xóa.");
+    }
+  };
+
+  const columns = [
+    {
+      title: "Mã trình độ",
+      dataIndex: "educationCode",
+      key: "educationCode",
+    },
+    {
+      title: "Tên trình độ",
+      dataIndex: "educationName",
+      key: "educationName",
+    },
+    {
+      title: "Tùy chọn",
+      key: "action",
+      render: (_, record) => (
+        <Space>
+          <Button icon={<EditOutlined />} onClick={() => handleEdit(record)}>
+            Sửa
+          </Button>
+          <Button danger icon={<DeleteOutlined />} onClick={() => handleDelete(record.id)}>
+            Xóa
+          </Button>
+        </Space>
+      ),
+    },
+  ];
 
   return (
-    <div className="education-level-management-container">
-      <div className="content">
-        <form onSubmit={handleAddEducationLevel} className="education-form">
-          <div className="form-grid">
-            <div className="form-group">
-              <label>Mã trình độ</label>
-              <input
-                type="text"
-                value={educationCode}
-                onChange={(e) => setEducationCode(e.target.value)}
-                placeholder="Nhập mã trình độ"
-              />
-            </div>
-            <div className="form-group">
-              <label>Tên trình độ</label>
-              <input
-                type="text"
-                value={educationName}
-                onChange={(e) => setEducationName(e.target.value)}
-                placeholder="Nhập tên trình độ"
-              />
-            </div>
+    <Layout style={{ backgroundColor: "white", borderRadius: "8px" }}>
+      <Content style={{ padding: "20px" }}>
+        <Form
+          form={form}
+          layout="vertical"
+          onFinish={handleAddEducationLevel}
+          style={{
+            backgroundColor: "#fff",
+            padding: "20px",
+            borderRadius: "8px",
+            boxShadow: "0 2px 10px rgba(0, 0, 0, 0.1)",
+            marginBottom: "20px",
+          }}
+        >
+          <div style={{ display: "flex", gap: "16px", alignItems: "flex-end" }}>
+            <Form.Item
+              name="educationCode"
+              label="Mã trình độ"
+              rules={[{ required: true, message: "Vui lòng nhập mã trình độ!" }]}
+              style={{ flex: 1 }}
+            >
+              <Input placeholder="Mã trình độ" disabled />
+            </Form.Item>
+            <Form.Item
+              name="educationName"
+              label="Tên trình độ"
+              rules={[{ required: true, message: "Vui lòng nhập tên trình độ!" }]}
+              style={{ flex: 1 }}
+            >
+              <Input placeholder="Tên trình độ" />
+            </Form.Item>
+            <Form.Item>
+              <Button
+                type="primary"
+                htmlType="submit"
+                style={{ backgroundColor: "#3e0fe6", borderColor: "#3e0fe6" }}
+                loading={loading}
+              >
+                Thêm
+              </Button>
+            </Form.Item>
           </div>
-          <div className="form-actions">
-            <button type="submit" className="add-button" disabled={loading}>
-              {loading ? <div className="spinner"></div> : "Thêm"}
-            </button>
-          </div>
-        </form>
-        <div className="search-section">
-          <div className="search-input-container">
-            <FaSearch className="search-icon" />
-            <input
-              type="text"
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              placeholder="Tìm kiếm..."
-              className="search-input"
-            />
-          </div>
-          <div className="filter-container">
-            <label>Lọc</label>
-            <select value={filter} onChange={handleFilter} className="filter-select">
-              <option value="">Chọn trình độ</option>
-              <option value="option1">Option 1</option>
-              <option value="option2">Option 2</option>
-            </select>
-          </div>
-        </div>
-        <div className="education-table-wrapper">
-          <table className="education-table">
-            <thead>
-              <tr>
-                <th>Mã trình độ</th>
-                <th>Tên trình độ</th>
-                <th>Tùy chọn</th>
-              </tr>
-            </thead>
-            <tbody>
-              {educationLevels.length > 0 ? (
-                educationLevels.map((level) => (
-                  <tr key={level.id}>
-                    <td>{level.educationCode}</td>
-                    <td>{level.educationName}</td>
-                    <td>
-                      <button
-                        className="edit-btn"
-                        onClick={() => handleEdit(level.id)}
-                      >
-                        Sửa
-                      </button>
-                      <button
-                        className="delete-btn"
-                        onClick={() => handleDelete(level.id)}
-                      >
-                        Xóa
-                      </button>
-                    </td>
-                  </tr>
-                ))
-              ) : (
-                <tr>
-                  <td colSpan="3" className="no-data">
-                    Không có dữ liệu
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
-        </div>
-        {message && (
-          <div className={`message ${message.includes("lỗi") ? "error" : "success"}`}>
-            {message}
-          </div>
-        )}
-      </div>
-    </div>
+        </Form>
+
+        <Space style={{ marginBottom: "20px", display: "flex" }}>
+          <Input
+            placeholder="Tìm kiếm..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            prefix={<SearchOutlined />}
+            style={{ width: "300px" }}
+          />
+        </Space>
+
+        <Table
+          columns={columns}
+          dataSource={filteredLevels}
+          rowKey="id"
+          loading={loading}
+          pagination={false}
+          scroll={{ x: true }}
+        />
+
+        <Modal
+          title="Chỉnh sửa trình độ"
+          open={editing}
+          onCancel={() => setEditing(false)}
+          onOk={handleUpdate}
+          okText="Cập nhật"
+        >
+          <Form form={editForm} layout="vertical">
+            <Form.Item label="Mã trình độ" name="educationCode">
+              <Input disabled />
+            </Form.Item>
+            <Form.Item
+              label="Tên trình độ"
+              name="educationName"
+              rules={[{ required: true, message: "Vui lòng nhập tên trình độ!" }]}
+            >
+              <Input />
+            </Form.Item>
+          </Form>
+        </Modal>
+      </Content>
+    </Layout>
   );
 };
 

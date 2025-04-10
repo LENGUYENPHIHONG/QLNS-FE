@@ -6,118 +6,99 @@ import {
   SearchOutlined, EditOutlined, DeleteOutlined
 } from "@ant-design/icons";
 import {
-  fetchPositions,
-  createPosition,
-  deletePosition,
-  getNewCode,
-  updatePosition
-} from "../../../api/positionApi";
+  fetchSpecializations,
+  createSpecialization,
+  updateSpecialization,
+  deleteSpecialization,
+  getNewCode
+} from "../../../api/specializationApi";
 
 const { Content } = Layout;
 
-const PositionManagement = () => {
+const SpecializationManagement = () => {
   const [form] = Form.useForm();
   const [editForm] = Form.useForm();
-  const [positions, setPositions] = useState([]);
-  const [filteredPositions, setFilteredPositions] = useState([]);
+  const [specializations, setSpecializations] = useState([]);
+  const [filteredSpecializations, setFilteredSpecializations] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [loading, setLoading] = useState(false);
   const [editing, setEditing] = useState(false);
   const [editingItem, setEditingItem] = useState(null);
 
   useEffect(() => {
-    loadPositions();
-    generateNewCode(); // Gọi sinh mã khi trang vừa mở
+    loadSpecializations();
+    generateNewCode();
   }, []);
 
   useEffect(() => {
     if (!searchTerm) {
-      setFilteredPositions(positions);
+      setFilteredSpecializations(specializations);
       return;
     }
     const lower = searchTerm.toLowerCase();
-    const filtered = positions.filter(
+    const filtered = specializations.filter(
       (item) =>
-        item.positionCode.toLowerCase().includes(lower) ||
-        item.positionName.toLowerCase().includes(lower)
+        item.specializationCode.toLowerCase().includes(lower) ||
+        item.specializationName.toLowerCase().includes(lower)
     );
-    setFilteredPositions(filtered);
-  }, [searchTerm, positions]);
+    setFilteredSpecializations(filtered);
+  }, [searchTerm, specializations]);
 
   const generateNewCode = async () => {
     try {
       const codeRes = await getNewCode();
-      console.log("📦 Mã mới:", codeRes.data?.code);
       if (codeRes.data?.code) {
-        form.setFieldsValue({ positionCode: codeRes.data.code });
+        form.setFieldsValue({ specializationCode: codeRes.data.code });
       }
     } catch (err) {
-      console.error("❌ Lỗi lấy mã chức vụ:", err);
+      console.error("Lỗi khi lấy mã chuyên môn:", err);
     }
   };
 
-  const loadPositions = async () => {
+  const loadSpecializations = async () => {
     setLoading(true);
     try {
-      const res = await fetchPositions();
+      const res = await fetchSpecializations();
       if (res.data?.Data && Array.isArray(res.data.Data)) {
         const list = res.data.Data.map((item) => ({
-          id: item.MACV,
-          positionCode: item.MACV,
-          positionName: item.TENCV,
+          id: item.MACM,
+          specializationCode: item.MACM,
+          specializationName: item.TENCM,
         }));
-        setPositions(list);
-        setFilteredPositions(list);
+        setSpecializations(list);
+        setFilteredSpecializations(list);
       } else {
-        setPositions([]);
-        setFilteredPositions([]);
+        setSpecializations([]);
+        setFilteredSpecializations([]);
         message.warning("Không có dữ liệu.");
       }
     } catch (err) {
-      console.error("❌ Lỗi API:", err);
-      message.error("Lỗi khi tải danh sách.");
+      message.error("Lỗi khi tải danh sách chuyên môn.");
     } finally {
       setLoading(false);
     }
   };
 
-  const handleAddPosition = async (values) => {
+  const handleAddSpecialization = async (values) => {
     setLoading(true);
     try {
       const data = {
-        MACV: values.positionCode,
-        TENCV: values.positionName,
+        MACM: values.specializationCode,
+        TENCM: values.specializationName,
       };
-      const res = await createPosition(data);
+      const res = await createSpecialization(data);
       if (res.data?.Success) {
-        message.success("Thêm thành công!");
+        message.success("Thêm chuyên môn thành công!");
         form.resetFields();
-        await loadPositions();
-        await generateNewCode(); // Sinh mã mới sau khi thêm
+        await loadSpecializations();
+        await generateNewCode();
       } else {
         message.error(res.data?.Message || "Thêm thất bại.");
       }
     } catch (err) {
-      message.error("Lỗi khi thêm chức vụ.");
+      message.error("Lỗi khi thêm chuyên môn.");
     } finally {
       setLoading(false);
-    }
-  };
-
-  const handleDelete = async (id) => {
-    const newList = positions.filter((item) => item.id !== id);
-    setPositions(newList);
-    try {
-      const res = await deletePosition({ MACV: id });
-      if (res.data?.Success) {
-        message.success("Xóa thành công!");
-      } else {
-        message.error(res.data?.Message || "Xóa thất bại.");
-        await loadPositions();
-      }
-    } catch (err) {
-      message.error("Lỗi khi xóa.");
-      await loadPositions();
     }
   };
 
@@ -125,8 +106,8 @@ const PositionManagement = () => {
     setEditing(true);
     setEditingItem(record);
     editForm.setFieldsValue({
-      positionCode: record.positionCode,
-      positionName: record.positionName,
+      specializationCode: record.specializationCode,
+      specializationName: record.specializationName,
     });
   };
 
@@ -134,14 +115,14 @@ const PositionManagement = () => {
     try {
       const values = await editForm.validateFields();
       const payload = {
-        MACV: editingItem.id,
-        TENCV: values.positionName,
+        MACM: editingItem.id,
+        TENCM: values.specializationName,
       };
-      const res = await updatePosition(payload);
+      const res = await updateSpecialization(payload);
       if (res.data?.Success || res.data?.MA) {
         message.success("Cập nhật thành công!");
         setEditing(false);
-        await loadPositions();
+        await loadSpecializations();
       } else {
         message.error(res.data?.Message || "Cập nhật thất bại.");
       }
@@ -150,16 +131,33 @@ const PositionManagement = () => {
     }
   };
 
+  const handleDelete = async (id) => {
+    const newList = specializations.filter((item) => item.id !== id);
+    setSpecializations(newList);
+    try {
+      const res = await deleteSpecialization({ MACM: id });
+      if (res.data?.Success) {
+        message.success("Xóa thành công!");
+      } else {
+        message.error(res.data?.Message || "Xóa thất bại.");
+        await loadSpecializations();
+      }
+    } catch (err) {
+      message.error("Lỗi khi xóa.");
+      await loadSpecializations();
+    }
+  };
+
   const columns = [
     {
-      title: "Mã chức vụ",
-      dataIndex: "positionCode",
-      key: "positionCode",
+      title: "Mã chuyên môn",
+      dataIndex: "specializationCode",
+      key: "specializationCode",
     },
     {
-      title: "Tên chức vụ",
-      dataIndex: "positionName",
-      key: "positionName",
+      title: "Tên chuyên môn",
+      dataIndex: "specializationName",
+      key: "specializationName",
     },
     {
       title: "Tùy chọn",
@@ -187,7 +185,7 @@ const PositionManagement = () => {
         <Form
           form={form}
           layout="vertical"
-          onFinish={handleAddPosition}
+          onFinish={handleAddSpecialization}
           style={{
             backgroundColor: "#fff",
             padding: "20px",
@@ -198,20 +196,20 @@ const PositionManagement = () => {
         >
           <div style={{ display: "flex", gap: "16px", alignItems: "flex-end" }}>
             <Form.Item
-              name="positionCode"
-              label="Mã chức vụ"
-              rules={[{ required: true, message: "Nhập mã chức vụ!" }]}
+              name="specializationCode"
+              label="Mã chuyên môn"
+              rules={[{ required: true, message: "Nhập mã chuyên môn!" }]}
               style={{ flex: 1 }}
             >
-              <Input placeholder="Mã chức vụ" readOnly />
+              <Input placeholder="Mã chuyên môn" readOnly />
             </Form.Item>
             <Form.Item
-              name="positionName"
-              label="Tên chức vụ"
-              rules={[{ required: true, message: "Nhập tên chức vụ!" }]}
+              name="specializationName"
+              label="Tên chuyên môn"
+              rules={[{ required: true, message: "Nhập tên chuyên môn!" }]}
               style={{ flex: 1 }}
             >
-              <Input placeholder="Tên chức vụ" />
+              <Input placeholder="Tên chuyên môn" />
             </Form.Item>
           </div>
           <div style={{ display: "flex", justifyContent: "flex-end", marginTop: "-5px" }}>
@@ -235,7 +233,7 @@ const PositionManagement = () => {
 
         <Table
           columns={columns}
-          dataSource={filteredPositions}
+          dataSource={filteredSpecializations}
           rowKey="id"
           loading={loading}
           pagination={false}
@@ -243,20 +241,20 @@ const PositionManagement = () => {
         />
 
         <Modal
-          title="Chỉnh sửa chức vụ"
+          title="Chỉnh sửa chuyên môn"
           open={editing}
           onCancel={() => setEditing(false)}
           onOk={handleUpdate}
           okText="Cập nhật"
         >
           <Form form={editForm} layout="vertical">
-            <Form.Item label="Mã chức vụ" name="positionCode">
+            <Form.Item label="Mã chuyên môn" name="specializationCode">
               <Input disabled />
             </Form.Item>
             <Form.Item
-              label="Tên chức vụ"
-              name="positionName"
-              rules={[{ required: true, message: "Vui lòng nhập tên chức vụ!" }]}
+              label="Tên chuyên môn"
+              name="specializationName"
+              rules={[{ required: true, message: "Vui lòng nhập tên chuyên môn!" }]}
             >
               <Input />
             </Form.Item>
@@ -267,4 +265,4 @@ const PositionManagement = () => {
   );
 };
 
-export default PositionManagement;
+export default SpecializationManagement;

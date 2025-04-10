@@ -48,24 +48,15 @@ const HeaderComponent = ({ onToggleSidebar, collapsed }) => {
         height: "65px",
         position: "fixed",
         top: 0,
-        left: collapsed ? 80 : 250,
+        left: collapsed ? 80 : 220,
         right: 0,
-        zIndex: 1000,
+        zIndex: 1001,
         display: "flex",
         alignItems: "center",
       }}
     >
       {/* Left section: Logo and Toggle button */}
-      <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-        <Link to="/" style={{ display: "flex", alignItems: "center" }}>
-          <img
-            src={logo} // Sử dụng ảnh logo đã import
-            alt="Logo"
-            style={{ height: "40px", maxWidth: "100%", borderRadius: "10px" }}
-          />
-        </Link>
-      </div>
-
+     
       {/* Right section: Email, Bell, User */}
       <Space style={{ marginLeft: "auto", display: "flex", alignItems: "center" }}>
         <Button

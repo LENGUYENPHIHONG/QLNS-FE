@@ -1,52 +1,15 @@
+
 import React, { useState, useMemo } from "react";
-import { FaSearch } from "react-icons/fa";
-import "./LeaveHistory.css";
+import { Layout, Input, Select, Table, Space } from "antd";
+import { SearchOutlined } from "@ant-design/icons";
+
+const { Content } = Layout;
+const { Option } = Select;
 
 const LeaveHistory = () => {
   const [searchTerm, setSearchTerm] = useState("");
-  const [reasonFilter, setReasonFilter] = useState(""); // State để lưu lý do được chọn
-  const [leaveHistory, setLeaveHistory] = useState([
-    {
-      id: 1,
-      requestCode: "REQ001",
-      employeeName: "Nguyễn Văn A",
-      leaveType: "Nghỉ phép năm",
-      startDate: "2025-03-01",
-      endDate: "2025-03-03",
-      status: "Đã phê duyệt",
-      reason: "Nghỉ để đi du lịch",
-    },
-    {
-      id: 2,
-      requestCode: "REQ002",
-      employeeName: "Trần Thị B",
-      leaveType: "Nghỉ ốm",
-      startDate: "2025-02-15",
-      endDate: "2025-02-16",
-      status: "Đã phê duyệt",
-      reason: "Ốm sốt",
-    },
-    {
-      id: 3,
-      requestCode: "REQ003",
-      employeeName: "Lê Văn C",
-      leaveType: "Nghỉ thai sản",
-      startDate: "2025-01-10",
-      endDate: "2025-04-10",
-      status: "Đã phê duyệt",
-      reason: "Sinh con",
-    },
-    {
-      id: 4,
-      requestCode: "REQ004",
-      employeeName: "Phạm Thị D",
-      leaveType: "Nghỉ phép năm",
-      startDate: "2025-03-05",
-      endDate: "2025-03-07",
-      status: "Từ chối",
-      reason: "Không đủ số ngày phép",
-    },
-  ]);
+  const [reasonFilter, setReasonFilter] = useState("");
+  const [leaveHistory, setLeaveHistory] = useState([]); // Mảng rỗng, sẽ lấy dữ liệu từ API sau
 
   // Lấy danh sách lý do duy nhất từ leaveHistory
   const uniqueReasons = useMemo(() => {
@@ -54,28 +17,35 @@ const LeaveHistory = () => {
     return ["Tất cả", ...reasons];
   }, [leaveHistory]);
 
+  // Dữ liệu gốc để reset sau khi lọc
+  const originalLeaveHistory = leaveHistory;
+
+  // Xử lý tìm kiếm
   const handleSearch = (e) => {
     const term = e.target.value.toLowerCase();
     setSearchTerm(term);
     filterData(term, reasonFilter);
   };
 
-  const handleReasonFilter = (e) => {
-    const reason = e.target.value;
-    setReasonFilter(reason);
-    filterData(searchTerm, reason);
+  // Xử lý lọc theo lý do
+  const handleReasonFilter = (value) => {
+    setReasonFilter(value);
+    filterData(searchTerm, value);
   };
 
+  // Hàm lọc dữ liệu
   const filterData = (term, reason) => {
-    let filtered = leaveHistory;
+    let filtered = [...originalLeaveHistory]; // Sử dụng dữ liệu gốc để lọc
 
     // Lọc theo từ khóa tìm kiếm
     if (term) {
       filtered = filtered.filter(
         (leave) =>
-          leave.employeeName.toLowerCase().includes(term) ||
-          leave.leaveType.toLowerCase().includes(term) ||
-          leave.status.toLowerCase().includes(term)
+          (leave.requestCode && leave.requestCode.toLowerCase().includes(term)) ||
+          (leave.employeeName && leave.employeeName.toLowerCase().includes(term)) ||
+          (leave.employeeCode && leave.employeeCode.toLowerCase().includes(term)) ||
+          (leave.leaveType && leave.leaveType.toLowerCase().includes(term)) ||
+          (leave.reason && leave.reason.toLowerCase().includes(term))
       );
     }
 
@@ -87,84 +57,89 @@ const LeaveHistory = () => {
     setLeaveHistory(filtered);
   };
 
+  // Cấu hình cột cho bảng
+  const columns = [
+    {
+      title: "Mã yêu cầu",
+      dataIndex: "requestCode",
+      key: "requestCode",
+    },
+    {
+      title: "Tên nhân viên",
+      dataIndex: "employeeName",
+      key: "employeeName",
+    },
+    {
+      title: "Mã nhân viên",
+      dataIndex: "employeeCode",
+      key: "employeeCode",
+    },
+    {
+      title: "Loại nghỉ phép",
+      dataIndex: "leaveType",
+      key: "leaveType",
+    },
+    {
+      title: "Ngày bắt đầu",
+      dataIndex: "startDate",
+      key: "startDate",
+    },
+    {
+      title: "Ngày kết thúc",
+      dataIndex: "endDate",
+      key: "endDate",
+    },
+    {
+      title: "Lý do",
+      dataIndex: "reason",
+      key: "reason",
+    },
+  ];
+
   return (
-    <div className="leave-history-container">
-      <h1>Quản lý nghỉ phép</h1>
-      <div className="search-section">
-        <div className="search-input-container">
-          <FaSearch className="search-icon" />
-          <input
-            type="text"
+    <Layout style={{ backgroundColor: "white", margin: "0px", borderRadius: "8px" }}>
+      {/* Nội dung chính */}
+      <Content style={{ padding: "20px" }}>
+
+        {/* Thanh tìm kiếm và lọc */}
+        <Space style={{ marginBottom: "20px", display: "flex", alignItems: "center" }}>
+          <Input
+            placeholder="Tìm kiếm..."
             value={searchTerm}
             onChange={handleSearch}
-            placeholder="Tìm kiếm theo tên..."
-            className="search-input"
+            prefix={<SearchOutlined style={{ color: "#007bff" }} />}
+            style={{ width: "300px" }}
           />
-        </div>
-        <div className="filter-container">
-          <label>Lọc theo lý do:</label>
-          <select
+          <Select
+            placeholder="Lọc theo lý do"
             value={reasonFilter}
             onChange={handleReasonFilter}
-            className="reason-filter"
+            style={{ width: "150px" }}
           >
             {uniqueReasons.map((reason, index) => (
-              <option key={index} value={reason}>
+              <Option key={index} value={reason}>
                 {reason}
-              </option>
+              </Option>
             ))}
-          </select>
-        </div>
-      </div>
-      <div className="leave-table-wrapper">
-        <table className="leave-table">
-          <thead>
-            <tr>
-              <th>Mã yêu cầu</th>
-              <th>Tên nhân viên</th>
-              <th>Loại nghỉ phép</th>
-              <th>Ngày bắt đầu</th>
-              <th>Ngày kết thúc</th>
-              <th>Trạng thái</th>
-              <th>Lý do</th>
-            </tr>
-          </thead>
-          <tbody>
-            {leaveHistory.length > 0 ? (
-              leaveHistory.map((leave) => (
-                <tr key={leave.id}>
-                  <td>{leave.requestCode}</td>
-                  <td>{leave.employeeName}</td>
-                  <td>{leave.leaveType}</td>
-                  <td>{leave.startDate}</td>
-                  <td>{leave.endDate}</td>
-                  <td>
-                    <span
-                      className={
-                        leave.status === "Đã phê duyệt"
-                          ? "status-approved"
-                          : leave.status === "Từ chối"
-                          ? "status-rejected"
-                          : "status-pending"
-                      }
-                    >
-                      {leave.status || "Chờ duyệt"}
-                    </span>
-                  </td>
-                  <td>{leave.reason}</td>
-                </tr>
-              ))
-            ) : (
-              <tr>
-                <td colSpan="7" className="no-data">
-                  Không có dữ liệu
-                </td>
-              </tr>
-            )}
-          </tbody>
-        </table>
-      </div>
-    </div>
+          </Select>
+        </Space>
+
+        {/* Bảng dữ liệu */}
+        <Table
+          columns={columns}
+          dataSource={leaveHistory}
+          rowKey="id"
+          locale={{ emptyText: <span style={{ color: "#dc3545" }}>Không có dữ liệu</span> }}
+          pagination={false}
+          style={{
+            backgroundColor: "#fff",
+            borderRadius: "4px",
+            boxShadow: "0 2px 10px rgba(0, 0, 0, 0.1)",
+          }}
+          scroll={{ x: true }}
+        />
+      </Content>
+    </Layout>
   );
 };
 

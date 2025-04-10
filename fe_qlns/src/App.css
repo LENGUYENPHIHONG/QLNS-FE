@@ -55,4 +55,22 @@ body {
 /* Đảm bảo không có dấu gạch chân khi hover */
 .custom-menu .ant-menu-item a:hover,
 .custom-menu .ant-menu-submenu-title a:hover {
-  text-decoration: none !important;}
+  text-decoration: none !important;
+}
+
+.ant-message {
+  position: fixed;
+  top: 24px;
+  left: 0;
+  right: 0;
+  z-index: 1010; /* đảm bảo nằm trên các layout khác */
+  pointer-events: none;
+}
+
+.ant-message-notice {
+  pointer-events: all;
+}
+.ant-message {
+  z-index: 9999 !important;
+  top: 80px !important;
+}
