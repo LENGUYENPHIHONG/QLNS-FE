@@ -23,10 +23,12 @@ const Sidebar = ({ collapsed, onToggle }) => {
   useEffect(() => {
     const path = location.pathname;
     setSelectedKey(path);
-    if (path.includes("/themnhanvien") || path.includes("/danhsachnhanvien")) {
+    if (path.includes("/danhsachnhanvien")) {
       setOpenKeys(["user"]);
-    } else if (path.includes("/themhopdong") || path.includes("/danhsachhopdong")) {
+    } else if (path.includes("/danhsachhopdong")) {
       setOpenKeys(["contract"]);
+    }else if (path.includes("/danhsachbaohiem")) {
+      setOpenKeys(["insurance"]);
     } else if (path.includes("/dangkinghiphep") || path.includes("/lichsunghiphep")) {
       setOpenKeys(["leave"]);
     } else if (
@@ -36,7 +38,10 @@ const Sidebar = ({ collapsed, onToggle }) => {
       path.includes("/trinhdo") ||
       path.includes("/loainhanvien") ||
       path.includes("/loainghiphep") ||
-      path.includes("/lichlamviec")
+      path.includes("/lichlamviec") ||
+      path.includes("/loaihopdong") ||
+      path.includes("/loaibaohiem") ||
+      path.includes("/loaichuyenmon") 
     ) {
       setOpenKeys(["category"]);
     } else {
@@ -59,7 +64,7 @@ const Sidebar = ({ collapsed, onToggle }) => {
         position: "fixed",
         left: 0,
         top: 0,
-        bottom: 0,
+        bottom: 50,
         zIndex: 1001,
         overflowY: "auto",
         paddingTop: "25px", // Chừa khoảng trống cho header
@@ -108,9 +113,6 @@ const Sidebar = ({ collapsed, onToggle }) => {
           icon={<UserOutlined style={{ fontSize: "24px" }} />}
           title="Nhân viên"
         >
-          <Menu.Item key="/themnhanvien">
-            <Link to="/themnhanvien">Thêm nhân viên</Link>
-          </Menu.Item>
           <Menu.Item key="/danhsachnhanvien">
             <Link to="/danhsachnhanvien">Danh sách nhân viên</Link>
           </Menu.Item>
@@ -122,11 +124,22 @@ const Sidebar = ({ collapsed, onToggle }) => {
           icon={<FileTextOutlined style={{ fontSize: "24px" }} />}
           title="Hợp đồng"
         >
-          <Menu.Item key="/themhopdong">
+          {/* <Menu.Item key="/themhopdong">
             <Link to="/themhopdong">Thêm hợp đồng</Link>
-          </Menu.Item>
+          </Menu.Item> */}
           <Menu.Item key="/danhsachhopdong">
             <Link to="/danhsachhopdong">Danh sách hợp đồng</Link>
+          </Menu.Item>
+        </SubMenu>
+         
+         {/* Bảo hiểm */}
+        <SubMenu
+          key="insurance"
+          icon={<UserOutlined style={{ fontSize: "24px" }} />}
+          title="Bảo hiểm"
+        >
+          <Menu.Item key="/danhsachbaohiem">
+            <Link to="/danhsachbaohiem">Danh sách bảo hiểm</Link>
           </Menu.Item>
         </SubMenu>
 
@@ -177,7 +190,9 @@ const Sidebar = ({ collapsed, onToggle }) => {
           <Menu.Item key="/loaihopdong">
             <Link to="/loaihopdong">Loại hợp đồng</Link>
           </Menu.Item>
-          
+          <Menu.Item key="/loaibaohiem">
+            <Link to="/loaibaohiem">Loại bảo hiểm</Link>
+          </Menu.Item>
         </SubMenu>
       </Menu>
     </Sider>

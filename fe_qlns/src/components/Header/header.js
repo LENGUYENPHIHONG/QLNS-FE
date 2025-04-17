@@ -1,6 +1,7 @@
 import React, { useState } from "react";
+import axios from "axios";
+import { message } from "antd"; 
 import { Layout, Button, Dropdown, Menu, Space, Avatar } from "antd";
-import { Link } from "react-router-dom";
 import {
   MenuOutlined,
   MailOutlined,
@@ -9,16 +10,32 @@ import {
   LogoutOutlined,
 } from "@ant-design/icons";
 
-// Import ảnh logo từ file cục bộ
-import logo from "../../image/qlns.png"; // Sử dụng logo đã có, hoặc thay bằng header-logo.png nếu muốn
+import logo from "../../image/qlns.png"; // logo cục bộ nếu bạn dùng
 
 const { Header } = Layout;
 
-const HeaderComponent = ({ onToggleSidebar, collapsed }) => {
+const HeaderComponent = ({  collapsed, userInfo }) => {
   const [open, setOpen] = useState(false);
+  console.log("Thông tin user:", userInfo);
 
-  const handleMenuClick = () => {
+  const handleMenuClick = async ({ key }) => {
     setOpen(false);
+  
+    if (key === "2") {
+      try {
+        await axios.post(`${process.env.REACT_APP_API_URL}/api/Auth/dang-xuat`, null, {
+          withCredentials: true,
+        });
+  
+        message.success("Đăng xuất thành công!");
+  
+        // Reload app về login
+        window.location.href = "/login";
+      } catch (error) {
+        message.error("Lỗi khi đăng xuất!");
+        console.error("Đăng xuất lỗi:", error);
+      }
+    }
   };
 
   const menu = (
@@ -55,9 +72,11 @@ const HeaderComponent = ({ onToggleSidebar, collapsed }) => {
         alignItems: "center",
       }}
     >
-      {/* Left section: Logo and Toggle button */}
-     
-      {/* Right section: Email, Bell, User */}
+      {/* Logo nếu có */}
+      <div style={{ display: "flex", alignItems: "center" }}>
+        <img src={logo} alt="Logo" style={{ height: "40px", marginRight: "10px" }} />
+      </div>
+
       <Space style={{ marginLeft: "auto", display: "flex", alignItems: "center" }}>
         <Button
           type="text"
@@ -87,7 +106,7 @@ const HeaderComponent = ({ onToggleSidebar, collapsed }) => {
               style={{ border: "1px solid #0858f7" }}
             />
             <span style={{ fontSize: "18px", fontWeight: "600", color: "#000" }}>
-              Phi Hồng
+              {userInfo?.TenNhanVien || "Null"}
             </span>
           </Space>
         </Dropdown>

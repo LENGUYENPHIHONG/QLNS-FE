@@ -1,43 +1,39 @@
 // src/components/Employee/EmployeeDetailModal.js
 import React from "react";
-import { Modal, Descriptions, Image } from "antd";
+import { Modal, Row, Col, Image } from "antd";
 
-const EmployeeDetailModal = ({ visible, onCancel, data }) => {
+const EmployeeDetailModal = ({ visible, onCancel, employee }) => {
+  if (!employee) return null;
+
   return (
-    <Modal
-      open={visible}
-      onCancel={onCancel}
-      footer={null}
-      title="Chi tiết nhân viên"
-      width={700}
-    >
-      <Descriptions column={2} bordered>
-        <Descriptions.Item label="Mã NV">{data?.MANV}</Descriptions.Item>
-        <Descriptions.Item label="Tên NV">{data?.TENNV}</Descriptions.Item>
-        <Descriptions.Item label="SĐT">{data?.SODIENTHOAI}</Descriptions.Item>
-        <Descriptions.Item label="CCCD">{data?.CCCD}</Descriptions.Item>
-        <Descriptions.Item label="Ngày sinh">{data?.NGAYSINH}</Descriptions.Item>
-        <Descriptions.Item label="Giới tính">{data?.GIOITINH}</Descriptions.Item>
-        <Descriptions.Item label="Trình độ">{data?.TrinhDo?.TENTD}</Descriptions.Item>
-        <Descriptions.Item label="Chuyên môn">{data?.ChuyenMon?.TENCM}</Descriptions.Item>
-        <Descriptions.Item label="Loại nhân viên">{data?.LoaiNhanVien?.TENLNV}</Descriptions.Item>
-        <Descriptions.Item label="Tôn giáo">{data?.TONGIAO}</Descriptions.Item>
-        <Descriptions.Item label="Hôn nhân">{data?.HONNHAN}</Descriptions.Item>
-        <Descriptions.Item label="Nơi sinh">{data?.NOISINH}</Descriptions.Item>
-        <Descriptions.Item label="Địa chỉ">{data?.DIACHI}</Descriptions.Item>
-        <Descriptions.Item label="Trạng thái">{data?.TRANGTHAI}</Descriptions.Item>
-        <Descriptions.Item label="Phòng ban">{data?.PhongBanStr}</Descriptions.Item>
-        <Descriptions.Item label="Chức vụ">{data?.ChucVuStr}</Descriptions.Item>
-        <Descriptions.Item label="Ngày vào làm">{data?.NGAYVAOLAM}</Descriptions.Item>
-        <Descriptions.Item label="Hợp đồng">{data?.HopDongTENLHD}</Descriptions.Item>
-        <Descriptions.Item label="Ảnh">
-          {data?.ANH ? (
-            <Image src={data?.ANH} width={100} />
-          ) : (
-            "Không có ảnh"
-          )}
-        </Descriptions.Item>
-      </Descriptions>
+    <Modal open={visible} onCancel={onCancel} footer={null} width={800} zIndex={2000} title="Thông tin nhân viên">
+      <Row gutter={44}>
+        <Col span={6}>
+          <Image
+            src={employee.ANH}
+            width={160}
+            height={200}
+            alt="Ảnh nhân viên"
+            style={{ objectFit: "cover", borderRadius: 8 }}
+          />
+        </Col>
+        <Col span={9}>
+          <p><strong>Mã nhân viên:</strong> {employee.MANV}</p>
+          <p><strong>Tên nhân viên:</strong> {employee.TENNV}</p>
+          <p><strong>Số điện thoại:</strong> {employee.SODIENTHOAI}</p>
+          <p><strong>CCCD:</strong> {employee.CCCD}</p>
+          <p><strong>Ngày vào làm:</strong> {employee.NGAYVAOLAM?.split("T")[0]}</p>
+          <p><strong>Trạng thái:</strong> {employee.TRANGTHAI}</p>
+        </Col>
+        <Col span={9}>
+          <p><strong>Trình độ:</strong> {employee.TrinhDo?.TENTD}</p>
+          <p><strong>Chuyên môn:</strong> {employee.ChuyenMon?.TENCM}</p>
+          <p><strong>Loại nhân viên:</strong> {employee.LoaiNhanVien?.TENLNV}</p>
+          <p><strong>Phòng ban:</strong> {employee.PhongBanStr}</p>
+          <p><strong>Chức vụ:</strong> {employee.ChucVuStr}</p>
+          <p><strong>Loại hợp đồng:</strong> {employee.HopDongTENLHD}</p>
+        </Col>
+      </Row>
     </Modal>
   );
 };

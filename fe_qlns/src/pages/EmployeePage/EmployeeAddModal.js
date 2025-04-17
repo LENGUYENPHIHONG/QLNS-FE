@@ -12,7 +12,7 @@ import {
 import { UploadOutlined } from "@ant-design/icons";
 import { getNewEmployeeCode } from "../../api/employeeApi";
 import "./EmployeeAddModal.css";
-
+import dayjs from "dayjs";
 const { Option } = Select;
 
 const EmployeeAddModal = ({
@@ -28,24 +28,34 @@ const EmployeeAddModal = ({
   educationLevels = [],
   specializations = [],
   employeeTypes = [],
+  isEdit = false,
+  initialValues = null,
 }) => {
   useEffect(() => {
-    const fetchEmployeeCode = async () => {
-      try {
-        const res = await getNewEmployeeCode();
-        if (res.data?.code) {
-          form.setFieldsValue({ id: res.data.code });
-        }
-      } catch (err) {
-        message.error("Không thể lấy mã nhân viên mới");
-      }
-    };
-
     if (visible) {
-      form.resetFields();
-      fetchEmployeeCode();
+      if (isEdit && initialValues) {
+        form.setFieldsValue({
+          ...initialValues,
+          birthDate: initialValues.birthDate ? dayjs(initialValues.birthDate) : null,
+          joinDate: initialValues.joinDate ? dayjs(initialValues.joinDate) : null
+        });
+      } else {
+        form.resetFields();
+        const fetchCode = async () => {
+          try {
+            const res = await getNewEmployeeCode();
+            if (res.data?.code) {
+              form.setFieldsValue({ id: res.data.code });
+            }
+          } catch {
+            message.error("Không thể lấy mã nhân viên");
+          }
+        };
+        fetchCode();
+      }
     }
-  }, [visible]);
+  }, [visible, isEdit, initialValues]);
+
 
   // Chuyển file ảnh sang base64
   const toBase64 = (file) =>
@@ -73,12 +83,14 @@ const EmployeeAddModal = ({
       IMAGEBASE64: imageBase64,
     };
 
+    delete fullPayload.status; // loại bỏ nếu tồn tại
+
     onFinish(fullPayload);
   };
 
   return (
     <Modal
-      title="Thêm nhân viên"
+      title={isEdit ? "Cập nhật nhân viên" : "Thêm nhân viên"}
       open={visible}
       onCancel={onCancel}
       footer={null}
@@ -107,14 +119,15 @@ const EmployeeAddModal = ({
           <Form.Item name="avatar" label="Ảnh 3x4">
             <Upload
               fileList={fileList}
+              defaultFileList={fileList}
               onChange={onFileChange}
               beforeUpload={() => false}
               maxCount={1}
+              listType="picture"
             >
               <Button icon={<UploadOutlined />}>Chọn tệp</Button>
             </Upload>
           </Form.Item>
-
           <Form.Item name="birthDate" label="Ngày sinh">
             <DatePicker style={{ width: "100%" }} format="YYYY-MM-DD" />
           </Form.Item>
@@ -214,18 +227,11 @@ const EmployeeAddModal = ({
           <Form.Item name="joinDate" label="Ngày vào làm">
             <DatePicker style={{ width: "100%" }} format="YYYY-MM-DD" />
           </Form.Item>
-
-          <Form.Item name="status" label="Trạng thái">
-            <Select>
-              <Option value="Đang làm việc">Đang làm việc</Option>
-              <Option value="Nghỉ việc">Nghỉ việc</Option>
-            </Select>
-          </Form.Item>
         </div>
 
         <Form.Item style={{ textAlign: "right", marginTop: "16px" }}>
           <Button type="primary" htmlType="submit" loading={loading}>
-            Thêm
+            {isEdit ? "Cập nhật" : "Thêm"}
           </Button>
           <Button style={{ marginLeft: 8 }} onClick={onCancel}>
             Hủy
