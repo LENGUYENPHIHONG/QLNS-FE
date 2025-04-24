@@ -91,7 +91,7 @@ const EducationLevelManagement = () => {
       const res = await createEducationLevel(data);
   
       if (res.data?.Success) {
-        alert("Thêm trình độ thành công!");
+        //alert("Thêm trình độ thành công!");
         form.resetFields();
         await loadLevels(); // reload danh sách
         await generateNewCode(); // tạo mã mới sau khi thêm

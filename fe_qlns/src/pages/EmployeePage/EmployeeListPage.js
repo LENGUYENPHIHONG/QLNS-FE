@@ -85,6 +85,7 @@ const EmployeeListPage = () => {
 
   const loadDropdowns = async () => {
     try {
+      
       const [pb, cv, td, cm, lnv] = await Promise.all([
         getDepartments(),
         getPositions(),
@@ -97,9 +98,11 @@ const EmployeeListPage = () => {
       setEducationLevels(td.data?.Data || []);
       setSpecializations(cm.data?.Data || []);
       setEmployeeTypes(lnv.data?.Data || []);
+      
     } catch (error) {
       message.error("Lỗi khi tải dropdown");
     }
+    
   };
 
   const handleSearch = (e) => {

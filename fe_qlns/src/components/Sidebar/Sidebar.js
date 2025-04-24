@@ -4,8 +4,10 @@ import {
   DashboardOutlined,
   UserOutlined,
   FileTextOutlined,
-  CalendarOutlined,
   AppstoreOutlined,
+  ScheduleOutlined,
+  TrophyOutlined,
+  SafetyOutlined     
 } from "@ant-design/icons";
 import { Link, useLocation } from "react-router-dom";
 
@@ -23,14 +25,16 @@ const Sidebar = ({ collapsed, onToggle }) => {
   useEffect(() => {
     const path = location.pathname;
     setSelectedKey(path);
-    if (path.includes("/danhsachnhanvien")) {
+    if (path.includes("/danhsachnhanvien") || path.includes("/taotaikhoannhanvien")) {
       setOpenKeys(["user"]);
     } else if (path.includes("/danhsachhopdong")) {
       setOpenKeys(["contract"]);
-    }else if (path.includes("/danhsachbaohiem")) {
+    } else if (path.includes("/danhsachbaohiem")) {
       setOpenKeys(["insurance"]);
     } else if (path.includes("/dangkinghiphep") || path.includes("/lichsunghiphep")) {
       setOpenKeys(["leave"]);
+    } else if (path.includes("/khenthuong") || path.includes("/kiluat")) {
+      setOpenKeys(["reward"]);
     } else if (
       path.includes("/phongban") ||
       path.includes("/bangcap") ||
@@ -116,6 +120,9 @@ const Sidebar = ({ collapsed, onToggle }) => {
           <Menu.Item key="/danhsachnhanvien">
             <Link to="/danhsachnhanvien">Danh sách nhân viên</Link>
           </Menu.Item>
+          <Menu.Item key="/taotaikhoannhanvien">
+            <Link to="/taotaikhoannhanvien">Tạo tài khoản </Link>
+          </Menu.Item>
         </SubMenu>
 
         {/* Hợp đồng */}
@@ -135,7 +142,7 @@ const Sidebar = ({ collapsed, onToggle }) => {
          {/* Bảo hiểm */}
         <SubMenu
           key="insurance"
-          icon={<UserOutlined style={{ fontSize: "24px" }} />}
+          icon={<SafetyOutlined style={{ fontSize: "24px" }} />}
           title="Bảo hiểm"
         >
           <Menu.Item key="/danhsachbaohiem">
@@ -146,8 +153,21 @@ const Sidebar = ({ collapsed, onToggle }) => {
         {/* Nghỉ phép */}
         <SubMenu
           key="leave"
-          icon={<CalendarOutlined style={{ fontSize: "24px" }} />}
+          icon={<ScheduleOutlined style={{ fontSize: "24px" }} />}
           title="Nghỉ phép"
+        >
+          <Menu.Item key="/dangkinghiphep">
+            <Link to="/dangkinghiphep">Đăng ký nghỉ phép</Link>
+          </Menu.Item>
+          <Menu.Item key="/lichsunghiphep">
+            <Link to="/lichsunghiphep">Lịch sử nghỉ phép</Link>
+          </Menu.Item>
+        </SubMenu>
+        {/* Khen thưởng - Kỷ luật */}
+        <SubMenu
+          key="reward"
+          icon={<TrophyOutlined style={{ fontSize: "24px" }} />}
+          title="Khen thưởng"
         >
           <Menu.Item key="/dangkinghiphep">
             <Link to="/dangkinghiphep">Đăng ký nghỉ phép</Link>

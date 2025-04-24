@@ -135,7 +135,7 @@ const SpecializationManagement = () => {
     const newList = specializations.filter((item) => item.id !== id);
     setSpecializations(newList);
     try {
-      const res = await deleteSpecialization({ MACM: id });
+      const res = await deleteSpecialization(id);
       if (res.data?.Success) {
         message.success("Xóa thành công!");
       } else {

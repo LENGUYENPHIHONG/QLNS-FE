@@ -41,13 +41,14 @@ const EmployeeTypeModal = ({
   };
 
   const handleAddOrUpdate = async (values) => {
+    
     setLoading(true);
     try {
       if (editingId) {
         await updateEmployeeType({
           MALNV: values.employeeTypeCode,
           TENLNV: values.employeeTypeName,
-          NGAYPHEPCAP: values.leaveDays,
+          //NGAYPHEPCAP: values.leaveDays,
         });
         message.success("Cập nhật thành công");
         setEmployeeTypes((prev) =>
@@ -56,7 +57,7 @@ const EmployeeTypeModal = ({
               ? {
                   ...type,
                   employeeTypeName: values.employeeTypeName,
-                  leaveDays: values.leaveDays,
+                  //leaveDays: values.leaveDays,
                 }
               : type
           )
@@ -65,7 +66,7 @@ const EmployeeTypeModal = ({
         await createEmployeeType({
           MALNV: values.employeeTypeCode,
           TENLNV: values.employeeTypeName,
-          NGAYPHEPCAP: values.leaveDays,
+          //NGAYPHEPCAP: values.leaveDays,
         });
         message.success("Thêm thành công");
         setEmployeeTypes((prev) => [
@@ -73,7 +74,7 @@ const EmployeeTypeModal = ({
           {
             employeeTypeCode: values.employeeTypeCode,
             employeeTypeName: values.employeeTypeName,
-            leaveDays: values.leaveDays,
+            //leaveDays: values.leaveDays,
           },
         ]);
       }
@@ -91,7 +92,7 @@ const EmployeeTypeModal = ({
     form.setFieldsValue({
       employeeTypeCode: record.employeeTypeCode,
       employeeTypeName: record.employeeTypeName,
-      leaveDays: record.leaveDays,
+      //leaveDays: record.leaveDays,
     });
     setEditingId(record.employeeTypeCode);
   };
@@ -128,11 +129,7 @@ const EmployeeTypeModal = ({
       dataIndex: "employeeTypeName",
       key: "employeeTypeName",
     },
-    {
-      title: "Số ngày phép",
-      dataIndex: "leaveDays",
-      key: "leaveDays",
-    },
+    
     {
       title: "Tùy chọn",
       key: "action",
@@ -182,14 +179,6 @@ const EmployeeTypeModal = ({
             style={{ flex: 1 }}
           >
             <Input placeholder="Tên loại nhân viên" />
-          </Form.Item>
-          <Form.Item
-            name="leaveDays"
-            label="Số ngày phép"
-            rules={[{ required: true, message: "Vui lòng nhập số ngày phép!" }]}
-            style={{ flex: 1 }}
-          >
-            <InputNumber min={0} style={{ width: "100%" }} />
           </Form.Item>
         </div>
 

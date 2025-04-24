@@ -108,7 +108,7 @@ const PositionManagement = () => {
     const newList = positions.filter((item) => item.id !== id);
     setPositions(newList);
     try {
-      const res = await deletePosition({ MACV: id });
+      const res = await deletePosition(id);
       if (res.data?.Success) {
         message.success("Xóa thành công!");
       } else {

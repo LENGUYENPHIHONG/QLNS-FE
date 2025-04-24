@@ -1,159 +1,212 @@
-import React, { useState } from "react";
-import { Layout, Form, Input, Button, Select, Table, Space, message, DatePicker } from "antd";
-import { SearchOutlined, EditOutlined, DeleteOutlined } from "@ant-design/icons";
-import moment from "moment"; // Để xử lý ngày tháng
+// src/pages/LeaveRequestManagement.js
+import React, { useState, useEffect } from "react";
+import {
+  Layout,
+  Form,
+  Input,
+  Button,
+  Select,
+  Table,
+  Space,
+  message,
+  DatePicker,
+} from "antd";
+import {
+  SearchOutlined,
+  DeleteOutlined,
+} from "@ant-design/icons";
+import moment from "moment";
+import {
+  getAllLeaveRequests,
+  createLeaveRequest,
+  approveLeave,
+  deleteLeaveRequest,
+} from "../../api/leaveRequestApi";
+import { fetchEmployees } from "../../api/employeeApi";
+import { getAllLeaveTypes } from "../../api/leaveTypeApi";
+import { getYearDetails } from "../../api/yearDetailApi";
+import dayjs from "dayjs";
+import axios from "axios";
 
 const { Content } = Layout;
 const { Option } = Select;
 
 const LeaveRequestManagement = () => {
   const [form] = Form.useForm();
-  const [filter, setFilter] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
-  const [leaveRequests, setLeaveRequests] = useState([]); // Danh sách yêu cầu nghỉ phép
+  const [leaveRequests, setLeaveRequests] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [leaveTypes, setLeaveTypes] = useState([]);
+  const [employees, setEmployees] = useState([]);
+  const [yearDetails, setYearDetails] = useState([]);
+  const [leaveTypeOptions, setLeaveTypeOptions] = useState([]);
+  const [statusOptions, setStatusOptions] = useState([]);
 
-  // Giả lập danh sách loại nghỉ phép (có thể lấy từ API hoặc state toàn cục)
-  const leaveTypes = [
-    { id: 1, leaveTypeName: "Nghỉ phép năm" },
-    { id: 2, leaveTypeName: "Nghỉ ốm" },
-    { id: 3, leaveTypeName: "Nghỉ không lương" },
-  ];
+  useEffect(() => {
+    fetchData();
+    fetchDropdowns();
+    fetchYearDetails();
+    fetchFilters();
+  }, []);
 
-  // Xử lý thêm yêu cầu nghỉ phép
-  const handleAddLeaveRequest = (values) => {
+  const fetchData = async () => {
     setLoading(true);
-    setTimeout(() => {
-      // Tính số ngày nghỉ
-      const startDate = moment(values.startDate);
-      const endDate = moment(values.endDate);
-      const daysOff = endDate.diff(startDate, "days") + 1; // Bao gồm cả ngày bắt đầu và kết thúc
+    try {
+      const res = await getAllLeaveRequests();
+      if (res.data?.Success) {
+        setLeaveRequests(res.data.Data);
+      }
+    } catch {
+      message.error("Lỗi khi tải dữ liệu nghỉ phép");
+    } finally {
+      setLoading(false);
+    }
+  };
 
-      const newLeaveRequest = {
-        id: Date.now(),
-        requestCode: values.requestCode,
-        employeeName: values.employeeName,
-        leaveType: values.leaveType,
-        startDate: values.startDate ? values.startDate.format("YYYY-MM-DD") : null,
-        endDate: values.endDate ? values.endDate.format("YYYY-MM-DD") : null,
-        reason: values.reason,
-        daysOff: daysOff > 0 ? daysOff : 0, // Số ngày nghỉ
-        status: "Chờ duyệt", // Mặc định trạng thái là "Chờ duyệt"
+  const fetchDropdowns = async () => {
+    try {
+      const empRes = await fetchEmployees(1, 1000);
+      const typeRes = await getAllLeaveTypes();
+      if (empRes.data?.Success) setEmployees(empRes.data.Data);
+      if (typeRes.data?.Success) setLeaveTypes(typeRes.data.Data);
+    } catch {
+      message.error("Không thể tải danh sách nhân viên hoặc loại phép");
+    }
+  };
+
+  const fetchYearDetails = async () => {
+    try {
+      const currentYear = new Date().getFullYear();
+      const res = await getYearDetails(currentYear);
+      if (res.data?.Success) setYearDetails(res.data.Data);
+    } catch {
+      message.error("Không thể tải chi tiết năm");
+    }
+  };
+
+  const fetchFilters = async () => {
+    try {
+      const res = await axios.get("http://localhost:5077/api/ChiTietNghiPhep/filter-summary");
+      if (res.data?.Success) {
+        setLeaveTypeOptions(res.data.Data.LoaiPhep);
+        setStatusOptions(res.data.Data.TrangThai);
+      }
+    } catch {
+      message.error("Không thể tải bộ lọc nghỉ phép");
+    }
+  };
+
+  const getRemainingLeave = (manv, tenLoaiPhep = "Phép năm") => {
+    const currentYear = new Date().getFullYear();
+    const detail = yearDetails.find(x => x.MaNhanVien === manv && x.Nam === currentYear);
+    if (!detail || !detail.ChiTietPhep) return "N/A";
+
+    const phep = detail.ChiTietPhep.find(p => p.LoaiPhep === tenLoaiPhep);
+    return phep?.SoPhepConLai ?? "N/A";
+  };
+
+  const handleAddLeaveRequest = async (values) => {
+    setLoading(true);
+    try {
+      const start = dayjs(values.startDate).hour(8).minute(0).second(0);
+      const end = dayjs(values.endDate).hour(8).minute(0).second(0);
+      const diffDays = end.diff(start, "day") + 1;
+
+      if (start.isBefore(dayjs(), 'day')) {
+        message.error("Không thể tạo nghỉ phép trong quá khứ.");
+        setLoading(false);
+        return;
+      }
+
+      if (end.isBefore(start, 'day')) {
+        message.error("Ngày kết thúc không hợp lệ.");
+        setLoading(false);
+        return;
+      }
+
+      const payload = {
+        id: "",
+        manv: values.employeeCode,
+        malp: values.leaveType,
+        ngaybatdau: start.toISOString(),
+        ngayketthuc: end.toISOString(),
+        songaynghi: diffDays,
+        lydo: values.reason,
+        trangthai: "Chờ phê duyệt",
+        isDeleted: false,
+        ngaytao: new Date().toISOString(),
+        ngaypheduyet: null
       };
-      setLeaveRequests([...leaveRequests, newLeaveRequest]);
-      message.success("Thêm yêu cầu nghỉ phép thành công!");
-      form.resetFields();
+
+      const res = await createLeaveRequest(payload);
+      if (res.data?.Success) {
+        message.success("Tạo yêu cầu nghỉ phép thành công");
+        form.resetFields();
+        fetchData();
+      } else {
+        message.error(res.data?.Message || "Tạo thất bại");
+      }
+    } catch (err) {
+      console.error("❌ Lỗi tạo nghỉ phép:", err);
+      message.error("Lỗi khi tạo yêu cầu nghỉ phép");
+    } finally {
       setLoading(false);
-    }, 1000);
+    }
   };
 
-  // Xử lý tìm kiếm
-  const handleSearch = () => {
-    const filtered = leaveRequests.filter(
-      (request) =>
-        request.requestCode.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        request.employeeName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        request.reason.toLowerCase().includes(searchTerm.toLowerCase())
-    );
-    setLeaveRequests(filtered);
-    console.log("Tìm kiếm với:", searchTerm);
-  };
-
-  // Xử lý xóa yêu cầu nghỉ phép
-  const handleDelete = (id) => {
+  const handleApprove = async (id) => {
     setLoading(true);
-    setTimeout(() => {
-      setLeaveRequests(leaveRequests.filter((request) => request.id !== id));
-      message.success("Xóa yêu cầu nghỉ phép thành công!");
+    try {
+      const res = await approveLeave(id);
+      if (res.data?.Success) {
+        message.success("Phê duyệt thành công");
+        fetchData();
+      } else {
+        message.error(res.data?.Message);
+      }
+    } catch {
+      message.error("Lỗi khi phê duyệt");
+    } finally {
       setLoading(false);
-    }, 1000);
+    }
   };
 
-    // Xử lý lọc (giả lập)
-    const handleFilter = (value) => {
-      setFilter(value);
-      console.log("Lọc với:", value);
-    };
-  
-  // Xử lý chỉnh sửa yêu cầu nghỉ phép (giả lập)
-  const handleEdit = (id) => {
-    console.log("Chỉnh sửa yêu cầu nghỉ phép:", id);
-  };
-
-  // Xử lý phê duyệt yêu cầu nghỉ phép
-  const handleApprove = (id) => {
+  const handleDelete = async (id) => {
     setLoading(true);
-    setTimeout(() => {
-      setLeaveRequests(
-        leaveRequests.map((request) =>
-          request.id === id ? { ...request, status: "Đã phê duyệt" } : request
-        )
-      );
-      message.success("Phê duyệt yêu cầu nghỉ phép thành công!");
+    try {
+      const res = await deleteLeaveRequest(id);
+      if (res.data?.Success) {
+        message.success("Xóa thành công");
+        fetchData();
+      } else {
+        message.error(res.data?.Message);
+      }
+    } catch {
+      message.error("Lỗi khi xóa");
+    } finally {
       setLoading(false);
-    }, 1000);
+    }
   };
 
-  // Cấu hình cột cho bảng
   const columns = [
+    { title: "Mã Yêu Cầu", dataIndex: "Id" },
+    { title: "Nhân Viên", dataIndex: "TENNV" },
+    { title: "Loại Nghỉ", dataIndex: "TENLP" },
+    { title: "Từ Ngày", dataIndex: "NGAYBATDAU", render: text => dayjs(text).format("DD/MM/YYYY") },
+    { title: "Đến Ngày", dataIndex: "NGAYKETTHUC", render: text => dayjs(text).format("DD/MM/YYYY") },
+    { title: "Số Ngày", dataIndex: "SONGAYNGHI" },
+    { title: "Lý Do", dataIndex: "LYDO" },
+    { title: "Trạng Thái", dataIndex: "TRANGTHAI" },
     {
-      title: "Mã yêu cầu",
-      dataIndex: "requestCode",
-      key: "requestCode",
-    },
-    {
-      title: "Tên nhân viên",
-      dataIndex: "employeeName",
-      key: "employeeName",
-    },
-    {
-      title: "Loại nghỉ phép",
-      dataIndex: "leaveType",
-      key: "leaveType",
-    },
-    {
-      title: "Số ngày nghỉ",
-      dataIndex: "daysOff",
-      key: "daysOff",
-    },
-    {
-      title: "Lý do",
-      dataIndex: "reason",
-      key: "reason",
-    },
-    {
-      title: "Trạng thái",
-      dataIndex: "status",
-      key: "status",
-    },
-    {
-      title: "Tùy chọn",
-      key: "action",
+      title: "Tuỳ Chọn",
       render: (_, record) => (
-        <Space size="middle">
-          {record.status === "Chờ duyệt" && (
-            <Button
-              type="primary"
-              style={{ backgroundColor: "#28a745", borderColor: "#28a745" }}
-              onClick={() => handleApprove(record.id)}
-            >
+        <Space>
+          {record.TRANGTHAI === "Chờ phê duyệt" && (
+            <Button type="primary" onClick={() => handleApprove(record.Id)}>
               Phê duyệt
             </Button>
           )}
-          <Button
-            type="primary"
-            style={{ backgroundColor: "#ffc107", borderColor: "#ffc107" }}
-            icon={<EditOutlined />}
-            onClick={() => handleEdit(record.id)}
-          >
-            Sửa
-          </Button>
-          <Button
-            type="primary"
-            danger
-            icon={<DeleteOutlined />}
-            onClick={() => handleDelete(record.id)}
-          >
+          <Button danger icon={<DeleteOutlined />} onClick={() => handleDelete(record.Id)}>
             Xóa
           </Button>
         </Space>
@@ -162,137 +215,74 @@ const LeaveRequestManagement = () => {
   ];
 
   return (
-    <Layout style={{ backgroundColor: "white", margin: "0px", borderRadius: "8px" }}>
-      {/* Nội dung chính */}
-      <Content style={{ padding: "20px" }}>
-        {/* Form nhập liệu */}
+    <Layout style={{ backgroundColor: "white" }}>
+      <Content style={{ padding: 20 }}>
         <Form
           form={form}
           layout="vertical"
           onFinish={handleAddLeaveRequest}
-          style={{
-            backgroundColor: "#fff",
-            padding: "20px",
-            borderRadius: "8px",
-            boxShadow: "0 2px 10px rgba(0, 0, 0, 0.1)",
-            marginBottom: "10px",
-          }}
+          style={{ background: "#fff", padding: 20, borderRadius: 8, marginBottom: 16 }}
         >
-          {/* Hàng 1: Mã yêu cầu, Tên nhân viên, Loại nghỉ phép */}
-          <div style={{ display: "flex", gap: "16px", alignItems: "flex-end" }}>
+          <Space size="large" wrap>
             <Form.Item
-              name="employeeName"
-              label="Tên nhân viên"
-              rules={[{ required: true, message: "Vui lòng nhập tên nhân viên!" }]}
-              style={{ flex: 1 }}
+              name="employeeCode"
+              label="Mã Nhân Viên"
+              rules={[{ required: true, message: "Vui lòng chọn nhân viên" }]}
             >
-              <Input placeholder="Tên nhân viên" />
-            </Form.Item>
-            <Form.Item
-              name="leaveType"
-              label="Loại nghỉ phép"
-              rules={[{ required: true, message: "Vui lòng chọn loại nghỉ phép!" }]}
-              style={{ flex: 1 }}
-            >
-              <Select placeholder="Chọn loại nghỉ phép">
-                {leaveTypes.map((type) => (
-                  <Option key={type.id} value={type.leaveTypeName}>
-                    {type.leaveTypeName}
+              <Select placeholder="Chọn nhân viên" style={{ width: 200 }}>
+                {employees?.map((emp) => (
+                  <Option key={emp.MANV} value={emp.MANV}>
+                    {emp.TENNV} ({getRemainingLeave(emp.MANV)} ngày còn lại)
                   </Option>
                 ))}
               </Select>
             </Form.Item>
-          </div>
-
-          {/* Hàng 2: Ngày bắt đầu, Ngày kết thúc, Lý do */}
-          <div style={{ display: "flex", gap: "16px", alignItems: "flex-end" }}>
+            <Form.Item
+              name="leaveType"
+              label="Loại Nghỉ Phép"
+              rules={[{ required: true, message: "Chọn loại nghỉ" }]}
+            >
+              <Select style={{ width: 200 }} placeholder="Chọn loại nghỉ">
+                {leaveTypes?.map((lt) => (
+                  <Option key={lt.MALP} value={lt.MALP}>{lt.TENLP}</Option>
+                ))}
+              </Select>
+            </Form.Item>
             <Form.Item
               name="startDate"
-              label="Ngày bắt đầu"
-              rules={[{ required: true, message: "Vui lòng chọn ngày bắt đầu!" }]}
-              style={{ flex: 1 }}
+              label="Ngày Bắt Đầu"
+              rules={[{ required: true, message: "Chọn ngày bắt đầu" }]}
             >
-              <DatePicker
-                placeholder="Chọn ngày bắt đầu"
-                style={{ width: "100%" }}
-                format="YYYY-MM-DD"
-              />
+              <DatePicker format="DD/MM/YYYY" style={{ width: 180 }} />
             </Form.Item>
             <Form.Item
               name="endDate"
-              label="Ngày kết thúc"
-              rules={[{ required: true, message: "Vui lòng chọn ngày kết thúc!" }]}
-              style={{ flex: 1 }}
+              label="Ngày Kết Thúc"
+              rules={[{ required: true, message: "Chọn ngày kết thúc" }]}
             >
-              <DatePicker
-                placeholder="Chọn ngày kết thúc"
-                style={{ width: "100%" }}
-                format="YYYY-MM-DD"
-              />
+              <DatePicker format="DD/MM/YYYY" style={{ width: 180 }} />
             </Form.Item>
-          </div>
-
-          <div style={{ display: "flex", gap: "16px", alignItems: "flex-end" }}>
             <Form.Item
               name="reason"
               label="Lý do"
-              rules={[{ required: true, message: "Vui lòng nhập lý do!" }]}
-              style={{ flex: 1 }}
+              rules={[{ required: true, message: "Nhập lý do" }]}
             >
-              <Input placeholder="Lý do" />
+              <Input placeholder="Lý do nghỉ phép" />
             </Form.Item>
-          </div>
-          {/* Hàng 3: Nút Thêm (căn phải) */}
-          <div style={{ display: "flex", justifyContent: "flex-end", marginTop: "-5px" }}>
             <Form.Item>
-              <Button
-                type="primary"
-                htmlType="submit"
-                style={{ backgroundColor: "#3e0fe6", borderColor: "#3e0fe6" }}
-                loading={loading}
-              >
-                Thêm
+              <Button type="primary" htmlType="submit" loading={loading}>
+                Gửi yêu cầu
               </Button>
             </Form.Item>
-          </div>
+          </Space>
         </Form>
 
-        {/* Thanh tìm kiếm */}
-        <Space style={{ marginBottom: "20px", display: "flex", alignItems: "center" }}>
-          <Input
-            placeholder="Tìm kiếm..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            prefix={<SearchOutlined style={{ color: "#007bff" }} />}
-            style={{ width: "300px" }}
-            onPressEnter={handleSearch}
-          />
-          <Select
-                      placeholder="Lọc"
-                      value={filter}
-                      onChange={handleFilter}
-                      style={{ width: "150px" }}
-                    >
-                      <Option value="">Chọn trình độ</Option>
-                      <Option value="option1">Option 1</Option>
-                      <Option value="option2">Option 2</Option>
-                    </Select>
-        </Space>
-
-        {/* Bảng dữ liệu */}
         <Table
           columns={columns}
           dataSource={leaveRequests}
-          rowKey="id"
+          rowKey="Id"
           loading={loading}
-          locale={{ emptyText: <span style={{ color: "#dc3545" }}>Không có dữ liệu</span> }}
-          pagination={false}
-          style={{
-            backgroundColor: "#fff",
-            borderRadius: "4px",
-            boxShadow: "0 2px 10px rgba(0, 0, 0, 0.1)",
-          }}
-          scroll={{ x: true }}
+          bordered
         />
       </Content>
     </Layout>

@@ -24,6 +24,8 @@ import DegreeManagement from "./components/Category/DegreeManagement/DegreeManag
 import ContractTypeManagement from "./components/Category/ContractTypeManagement/ContractTypeManagement";
 import SpecializationManagement from "./components/Category/SpecializationManagement/SpecializationManagement";
 import ContractManagement from "./pages/Contract/Contract";
+import EmployeeAccountPage from "./pages/EmployeePage/EmployeeAccountPage.js";
+import InsuranceManagement from "./pages/InsurancePage/InsurancePage";
 import InsuranceTypeManagement from "./components/Category/InsuranceTypeManagement/InsuranceTypeManagement";
 import LeaveRequestManagement from "./pages/Leave/LeaveManagement";
 import LeaveHistory from "./pages/Leave/LeaveHistory";
@@ -100,8 +102,10 @@ const AppLayout = ({ collapsed, toggleSidebar }) => {
             {/* Routes sau khi đã đăng nhập */}
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/danhsachnhanvien" element={<EmployeeListPage />} />
+            <Route path="/taotaikhoannhanvien" element={<EmployeeAccountPage />} />
             <Route path="/chucvu" element={<PositionManagement />} />
             <Route path="/danhsachhopdong" element={<ContractManagement />} />
+            <Route path="/danhsachbaohiem" element={<InsuranceManagement />} />
             <Route path="/dangkinghiphep" element={<LeaveRequestManagement />} />
             <Route path="/lichsunghiphep" element={<LeaveHistory />} />
             <Route path="/phongban" element={<DepartmentManagement />} />

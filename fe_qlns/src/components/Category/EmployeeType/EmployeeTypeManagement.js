@@ -1,5 +1,5 @@
 // src/pages/EmployeeTypeManagement.js
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Layout,
   Form,
@@ -16,7 +16,8 @@ import {
   EditOutlined,
   DeleteOutlined,
 } from "@ant-design/icons";
-import EmployeeTypeModal from "./EmployeeTypeModal"; // ✅ modal tách riêng
+import EmployeeTypeModal from "./EmployeeTypeModal";
+import { getAllEmployeeTypes } from "../../../api/employeeTypeModalApi"; // ✅ Import API
 
 const { Content } = Layout;
 const { Option } = Select;
@@ -29,6 +30,24 @@ const EmployeeTypeManagement = () => {
   const [employeeTypes, setEmployeeTypes] = useState([]);
   const [loading, setLoading] = useState(false);
   const [modalVisible, setModalVisible] = useState(false);
+
+  // ✅ Gọi API lấy loại nhân viên
+  const fetchEmployeeTypes = async () => {
+    try {
+      const res = await getAllEmployeeTypes();
+      const data = res.data.Data.map((item) => ({
+        employeeTypeCode: item.MALNV,
+        employeeTypeName: item.TENLNV,
+      }));
+      setEmployeeTypes(data);
+    } catch (err) {
+      message.error("Không thể tải loại nhân viên!");
+    }
+  };
+
+  useEffect(() => {
+    fetchEmployeeTypes();
+  }, []);
 
   const handleAddEmployee = (values) => {
     setLoading(true);
@@ -109,7 +128,13 @@ const EmployeeTypeManagement = () => {
           form={form}
           layout="vertical"
           onFinish={handleAddEmployee}
-          style={{ backgroundColor: "#fff", padding: 20, borderRadius: 8, boxShadow: "0 2px 10px rgba(0,0,0,0.1)", marginBottom: 20 }}
+          style={{
+            backgroundColor: "#fff",
+            padding: 20,
+            borderRadius: 8,
+            boxShadow: "0 2px 10px rgba(0,0,0,0.1)",
+            marginBottom: 20,
+          }}
         >
           <div style={{ display: "flex", gap: 16, alignItems: "flex-end" }}>
             <Form.Item
@@ -124,7 +149,7 @@ const EmployeeTypeManagement = () => {
               name="employeeType"
               label={
                 <span>
-                  Loại nhân viên {" "}
+                  Loại nhân viên{" "}
                   <Button
                     type="link"
                     icon={<PlusOutlined />}
@@ -138,7 +163,10 @@ const EmployeeTypeManagement = () => {
             >
               <Select placeholder="Chọn loại nhân viên">
                 {employeeTypes.map((type) => (
-                  <Option key={type.id} value={type.employeeTypeName}>
+                  <Option
+                    key={type.employeeTypeCode}
+                    value={type.employeeTypeName}
+                  >
                     {type.employeeTypeName}
                   </Option>
                 ))}
@@ -192,7 +220,10 @@ const EmployeeTypeManagement = () => {
 
         <EmployeeTypeModal
           visible={modalVisible}
-          onCancel={() => setModalVisible(false)}
+          onCancel={() => {
+            setModalVisible(false);
+            fetchEmployeeTypes(); // 🔁 Reload sau khi thêm/sửa
+          }}
           employeeTypes={employeeTypes}
           setEmployeeTypes={setEmployeeTypes}
           loading={loading}
