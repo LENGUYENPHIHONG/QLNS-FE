@@ -169,11 +169,11 @@ const Sidebar = ({ collapsed, onToggle }) => {
           icon={<TrophyOutlined style={{ fontSize: "24px" }} />}
           title="Khen thưởng"
         >
-          <Menu.Item key="/dangkinghiphep">
-            <Link to="/dangkinghiphep">Đăng ký nghỉ phép</Link>
+          <Menu.Item key="/khenthuong">
+            <Link to="/khenthuong">Khen thưởng</Link>
           </Menu.Item>
-          <Menu.Item key="/lichsunghiphep">
-            <Link to="/lichsunghiphep">Lịch sử nghỉ phép</Link>
+          <Menu.Item key="/kyluat">
+            <Link to="/kyluat">Kỷ luật</Link>
           </Menu.Item>
         </SubMenu>
 

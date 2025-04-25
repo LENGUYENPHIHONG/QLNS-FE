@@ -24,6 +24,8 @@ import DegreeManagement from "./components/Category/DegreeManagement/DegreeManag
 import ContractTypeManagement from "./components/Category/ContractTypeManagement/ContractTypeManagement";
 import SpecializationManagement from "./components/Category/SpecializationManagement/SpecializationManagement";
 import ContractManagement from "./pages/Contract/Contract";
+import KhenThuongPage from "./pages/KhenThuongKiLuat/KhenThuongPage.js";
+import KyLuatPage from "./pages/KhenThuongKiLuat/KyLuatPage.js";
 import EmployeeAccountPage from "./pages/EmployeePage/EmployeeAccountPage.js";
 import InsuranceManagement from "./pages/InsurancePage/InsurancePage";
 import InsuranceTypeManagement from "./components/Category/InsuranceTypeManagement/InsuranceTypeManagement";
@@ -108,6 +110,8 @@ const AppLayout = ({ collapsed, toggleSidebar }) => {
             <Route path="/danhsachbaohiem" element={<InsuranceManagement />} />
             <Route path="/dangkinghiphep" element={<LeaveRequestManagement />} />
             <Route path="/lichsunghiphep" element={<LeaveHistory />} />
+            <Route path="/khenthuong" element={<KhenThuongPage />} />
+            <Route path="/kyluat" element={<KyLuatPage />} />
             <Route path="/phongban" element={<DepartmentManagement />} />
             <Route path="/trinhdo" element={<EducationLevelManagement />} />
             <Route path="/bangcap" element={<DegreeManagement />} />
