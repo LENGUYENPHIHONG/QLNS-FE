@@ -88,7 +88,6 @@ const AppLayout = ({ collapsed, toggleSidebar }) => {
 
         {/* Header cũng chỉ hiển thị khi đã đăng nhập */}
         {authenticated  && <Header collapsed={collapsed} onToggleSidebar={toggleSidebar} userInfo={userInfo} />}
-
         <Content
           style={{
             marginTop: authenticated  ? 65 : 0,
@@ -122,8 +121,8 @@ const AppLayout = ({ collapsed, toggleSidebar }) => {
             <Route path="/loaibaohiem" element={<InsuranceTypeManagement />} />
             <Route path="/loaichuyenmon" element={<SpecializationManagement />} />
             <Route path="/lichlamviec/id" element={<WorkScheduleDetail />} />
-
             {/* Mặc định redirect */}
+            
             <Route path="*" element={<Navigate to="/dashboard" />} />
           </Routes>
         </Content>
