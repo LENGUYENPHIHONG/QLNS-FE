@@ -1,53 +1,35 @@
 import axios from "axios";
 
-const BASE_URL = "http://localhost:5077/api/ChiTietBaoHiem";
+const BASE = "http://localhost:5077/api/ChiTietBaoHiem";
 
-// Lấy danh sách bảo hiểm
-export const fetchInsurances = () => {
-  return axios.get(`${BASE_URL}/DanhSachBH`);
-};
+// GET all
+export const fetchInsurances = () =>
+  axios.get(`${BASE}/DanhSachBH`);
 
-// Lấy chi tiết bảo hiểm theo ID
-export const fetchInsuranceById = (id) => {
-  return axios.get(`${BASE_URL}/ChiTietBH/${id}`);
-};
+// GET single detail
+export const fetchInsuranceById = (id) =>
+  axios.get(`${BASE}/DanhSachBH`, { params: { search: id } }); 
+// ↑ if you had a real ChiTietBH/{id} route, switch to that
 
-// Tạo mới bảo hiểm
-export const createInsurance = (data) => {
-  return axios.post(`${BASE_URL}/TaoBH`, data);
-};
+// CREATE
+export const createInsurance = (data) =>
+  axios.post(`${BASE}/TaoBH`, data);
 
-// Phê duyệt bảo hiểm
-export const approveInsurance = (id, data) => {
-  return axios.put(`${BASE_URL}/PheDuyetBH/${id}`, data);
-};
+// UPDATE (approve or edit)
+export const updateInsurance = (id, data) =>
+  axios.put(`${BASE}/CapNhatBH/${id}`, data);
 
-// Gia hạn bảo hiểm
-export const renewInsurance = (id) => {
-  return axios.post(`${BASE_URL}/GiaHanBH/${id}`);
-};
+// DELETE expired
+export const deleteInsurance = (id) =>
+  axios.delete(`${BASE}/XoaBH/${id}`);
 
-// Kết thúc (xoá) bảo hiểm
-export const endInsurance = (id) => {
-  return axios.delete(`${BASE_URL}/XoaBH/${id}`);
-};
+// RENEW (Gia hạn)
+export const renewInsurances = (payload) =>
+  axios.post(`${BASE}/GiaHanBaoHiem`, payload);
 
-// Lấy mã bảo hiểm mới
-export const getNewInsuranceCode = () => {
-  return axios.get(`${BASE_URL}/MaBH`);
-};
+// SUPPORTING LOOKUPS
+export const getEmployees = () =>
+  axios.get("http://localhost:5077/api/NhanVien/DanhSachNV");
 
-// Tìm kiếm, lọc nâng cao
-export const filterInsurances = (params) => {
-  return axios.get(`${BASE_URL}/TimVaLocBH`, { params });
-};
-
-// Lấy danh sách nhân viên
-export const getEmployees = () => {
-  return axios.get("http://localhost:5077/api/NhanVien/DanhSachNV");
-};
-
-// Lấy danh sách loại bảo hiểm
-export const getInsuranceTypes = () => {
-  return axios.get("http://localhost:5077/api/LoaiBaoHiem/DanhSachLBH");
-};
+export const getInsuranceTypes = () =>
+  axios.get("http://localhost:5077/api/LoaiBaoHiem/DanhSachLBH");
