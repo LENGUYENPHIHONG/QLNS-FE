@@ -45,7 +45,8 @@ const Sidebar = ({ collapsed, onToggle }) => {
       path.includes("/lichlamviec") ||
       path.includes("/loaihopdong") ||
       path.includes("/loaibaohiem") ||
-      path.includes("/loaichuyenmon") 
+      path.includes("/loaichuyenmon") ||
+      path.includes("/loaikynang") 
     ) {
       setOpenKeys(["category"]);
     } else {
@@ -212,6 +213,8 @@ const Sidebar = ({ collapsed, onToggle }) => {
           </Menu.Item>
           <Menu.Item key="/loaibaohiem">
             <Link to="/loaibaohiem">Loại bảo hiểm</Link>
+          </Menu.Item><Menu.Item key="/loaikynang">
+            <Link to="/loaikynang">Loại kỹ năng</Link>
           </Menu.Item>
         </SubMenu>
       </Menu>

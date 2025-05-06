@@ -62,7 +62,7 @@ export default function InsuranceManagement() {
       form.setFieldsValue({
         MANV: record.MANV,
         MALBH: record.MALBH,
-        CHUKY: record.CHUKY,
+        CHUKY: record.CHUKY
       });
     } else {
       setEditingId(null);
@@ -79,6 +79,8 @@ export default function InsuranceManagement() {
         // cập nhật
         const current = data.find(i => i.Id === editingId);
         await updateInsurance(editingId, {
+          MANV: values.MANV,
+          MALBH: values.MALBH,
           CHUKY: values.CHUKY,
           TRANGTHAI: current.TRANGTHAI
         });
@@ -88,7 +90,8 @@ export default function InsuranceManagement() {
         await createInsurance({
           MANV: values.MANV,
           MALBH: values.MALBH,
-          CHUKY: values.CHUKY
+          CHUKY: values.CHUKY,
+          TRANGTHAI: ""
         });
         message.success("Tạo mới thành công");
       }
@@ -136,66 +139,77 @@ export default function InsuranceManagement() {
     }
   }
 
-  async function onApprove(record) {
-    setLoading(true);
-    try {
-      const detail = (await fetchInsuranceById(record.Id)).data.Data;
-      await updateInsurance(record.Id, {
-        CHUKY: detail.CHUKY,
-        TRANGTHAI: "Đã đóng"
-      });
-      message.success("Phê duyệt thành công");
-      await loadAll();
-    } catch (err) {
-      console.error("❌ onApprove:", err);
-      message.error("Phê duyệt thất bại");
-    } finally {
-      setLoading(false);
-    }
-  }
+  // async function onApprove(record) {
+  //   setLoading(true);
+  //   try {
+  //     const detail = (await fetchInsuranceById(record.Id)).data.Data;
+  //     await updateInsurance(record.Id, {
+  //       CHUKY: detail.CHUKY,
+  //       TRANGTHAI: "Đã đóng"
+  //     });
+  //     message.success("Phê duyệt thành công");
+  //     await loadAll();
+  //   } catch (err) {
+  //     console.error("❌ onApprove:", err);
+  //     message.error("Phê duyệt thất bại");
+  //   } finally {
+  //     setLoading(false);
+  //   }
+  // }
 
   const columns = [
-    { title: "Mã NV",       dataIndex: "MANV",    key: "MANV"    },
-    { title: "Nhân viên",   dataIndex: "TENNV",   key: "TENNV"   },
-    { title: "Loại BH",     dataIndex: "TENLBH",  key: "TENLBH"  },
-    { title: "Chu kỳ",      dataIndex: "CHUKY",   key: "CHUKY"   },
     {
-      title: "Bắt đầu", dataIndex: "NGAYBATDAU", key: "NGAYBATDAU",
-      render: d => d ? dayjs(d).format("YYYY-MM-DD") : "—"
+      title: "Mã bảo hiểm",
+      dataIndex: "Id",
+      key: "Id"
+    },
+    { title: "Nhân viên", dataIndex: "TENNV", key: "TENNV" },
+    { title: "Loại BH", dataIndex: "TENLBH", key: "TENLBH" },
+    { title: "Chu kỳ", dataIndex: "CHUKY", key: "CHUKY" },
+    {
+      title: "Bắt đầu",
+      dataIndex: "NGAYBATDAU",
+      key: "NGAYBATDAU",
+      render: d => (d ? dayjs(d).format("YYYY-MM-DD") : "—")
     },
     {
-      title: "Kết thúc", dataIndex: "NGAYKETTHUC", key: "NGAYKETTHUC",
-      render: d => d ? dayjs(d).format("YYYY-MM-DD") : "—"
+      title: "Kết thúc",
+      dataIndex: "NGAYKETTHUC",
+      key: "NGAYKETTHUC",
+      render: d => (d ? dayjs(d).format("YYYY-MM-DD") : "—")
     },
     {
-      title: "Trạng thái", dataIndex: "TRANGTHAI", key: "TRANGTHAI",
-      render: st => <Tag>{st}</Tag>
+      title: "Trạng thái",
+      dataIndex: "TRANGTHAI",
+      key: "TRANGTHAI",
+      render: st => {
+        let color;
+        switch (st) {
+          case "Đang hiệu lực":
+            color = "green";
+            break;
+          case "Sắp hết hiệu lực":
+            color = "gold";
+            break;
+          case "Hết hiệu lực":
+            color = "red";
+            break;
+          default:
+            color = "default";
+        }
+        return <Tag color={color}>{st}</Tag>;
+      }
     },
     {
       title: "Hành động",
       key: "actions",
       render: (_, r) => (
         <Space>
-          {r.TRANGTHAI === "Chưa đóng" && (
-            <Button
-              onClick={() => onApprove(r)}
-              icon={<CheckCircleOutlined />}
-            >
-              Duyệt
-            </Button>
-          )}
-          <Button
-            icon={<EditOutlined />}
-            onClick={() => openModal(r)}
-          >
+          <Button icon={<EditOutlined />} onClick={() => openModal(r)}>
             Sửa
           </Button>
-          {r.TRANGTHAI === "Hết hạn" && (
-            <Button
-              danger
-              onClick={() => onDelete(r.Id)}
-              icon={<DeleteOutlined />}
-            >
+          {r.TRANGTHAI === "Hết hiệu lực" && (
+            <Button danger onClick={() => onDelete(r.Id)} icon={<DeleteOutlined />}>
               Xóa
             </Button>
           )}
@@ -217,11 +231,7 @@ export default function InsuranceManagement() {
             onChange={e => setSearch(e.target.value)}
             onPressEnter={loadAll}
           />
-          <Button
-            type="primary"
-            icon={<PlusOutlined />}
-            onClick={() => openModal()}
-          >
+          <Button type="primary" icon={<PlusOutlined />} onClick={() => openModal()}>
             Tạo mới
           </Button>
           <Button
@@ -240,9 +250,7 @@ export default function InsuranceManagement() {
           }}
           columns={columns}
           dataSource={data.filter(i =>
-            JSON.stringify(i)
-              .toLowerCase()
-              .includes(search.toLowerCase())
+            JSON.stringify(i).toLowerCase().includes(search.toLowerCase())
           )}
           rowKey="Id"
           loading={loading}
@@ -302,11 +310,7 @@ export default function InsuranceManagement() {
             </Form.Item>
 
             <Form.Item style={{ textAlign: "right" }}>
-              <Button
-                type="primary"
-                htmlType="submit"
-                loading={loading}
-              >
+              <Button type="primary" htmlType="submit" loading={loading}>
                 {editingId ? "Cập nhật" : "Tạo mới"}
               </Button>
             </Form.Item>

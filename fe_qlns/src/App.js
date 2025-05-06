@@ -23,6 +23,7 @@ import LeaveTypeManagement from "./components/Category/LeaveTypeManagement/Leave
 import DegreeManagement from "./components/Category/DegreeManagement/DegreeManagement";
 import ContractTypeManagement from "./components/Category/ContractTypeManagement/ContractTypeManagement";
 import SpecializationManagement from "./components/Category/SpecializationManagement/SpecializationManagement";
+import SkillsManagement from "./components/Category/SkillsManagement/SkillsManagement";
 import ContractManagement from "./pages/Contract/Contract";
 import KhenThuongPage from "./pages/KhenThuongKiLuat/KhenThuongPage.js";
 import KyLuatPage from "./pages/KhenThuongKiLuat/KyLuatPage.js";
@@ -121,6 +122,7 @@ const AppLayout = ({ collapsed, toggleSidebar }) => {
             <Route path="/loaibaohiem" element={<InsuranceTypeManagement />} />
             <Route path="/loaichuyenmon" element={<SpecializationManagement />} />
             <Route path="/lichlamviec/id" element={<WorkScheduleDetail />} />
+            <Route path="/loaikynang" element={<SkillsManagement />} />
             {/* Mặc định redirect */}
             
             <Route path="*" element={<Navigate to="/dashboard" />} />
