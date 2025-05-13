@@ -1,23 +1,23 @@
 import axios from "axios";
 
-const BASE_URL = "http://localhost:5077/api/LoaiNhanVien"; // 🔁 Thay 'port' bằng cổng API thực tế
+const API_URL = process.env.REACT_APP_API_URL
 
 export const getAutoCode = () => {
-  return axios.get(`${BASE_URL}/MaLNV`);
+  return axios.get(`${API_URL}/api/LoaiNhanVien/MaLNV`);
 };
 
 export const getAllEmployeeTypes = () => {
-  return axios.get(`${BASE_URL}/DanhSachLNV`);
+  return axios.get(`${API_URL}/api/LoaiNhanVien/DanhSachLNV`);
 };
 
 export const createEmployeeType = (data) => {
-  return axios.post(`${BASE_URL}/TaoLNV`, data);
+  return axios.post(`${API_URL}/api/LoaiNhanVien/TaoLNV`, data);
 };
 
 export const updateEmployeeType = (data) => {
-  return axios.put(`${BASE_URL}/CapNhatLNV`, data);
+  return axios.put(`${API_URL}/api/LoaiNhanVien/CapNhatLNV`, data);
 };
 
 export const deleteEmployeeType = (data) => {
-  return axios.delete(`${BASE_URL}/DeleteLNV`, { data });
+  return axios.delete(`${API_URL}/api/LoaiNhanVien/DeleteLNV`, { data });
 };

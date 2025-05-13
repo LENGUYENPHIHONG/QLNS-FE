@@ -1,24 +1,24 @@
 import axios from "axios";
 
-const API_BASE = "http://localhost:5077/api/TrinhDo";
+const API_URL = process.env.REACT_APP_API_URL
 
 export const fetchEducationLevels = () => {
-  return axios.get(`${API_BASE}/DanhSachTD`);
+  return axios.get(`${API_URL}/api/TrinhDo/DanhSachTD`);
 };
 
 export const getNewEducationCode = () => {
-  return axios.get(`${API_BASE}/MaTD`);
+  return axios.get(`${API_URL}/api/TrinhDo/MaTD`);
 };
 
 export const createEducationLevel = (data) => {
   console.log("\u{1F4E6} Payload gửi:", data);
-  return axios.post(`${API_BASE}/TaoTD`, data);
+  return axios.post(`${API_URL}/api/TrinhDo/TaoTD`, data);
 };
 
 export const updateEducationLevel = (data) => {
-  return axios.put(`${API_BASE}/CapNhatTD`, data);
+  return axios.put(`${API_URL}/api/TrinhDo/CapNhatTD`, data);
 };
 
 export const deleteEducationLevel = (data) => {
-  return axios.delete(`${API_BASE}/DeleteTD`, { data });
+  return axios.delete(`${API_URL}/api/TrinhDo/DeleteTD`, { data });
 };

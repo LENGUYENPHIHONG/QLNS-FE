@@ -1,29 +1,29 @@
 import axios from "axios";
 
-const baseUrl = "http://localhost:5077/api/LoaiBaoHiem"; // Đổi lại nếu API của bạn chạy cổng khác
+const API_URL = process.env.REACT_APP_API_URL
 
 // Lấy danh sách loại bảo hiểm
 export const fetchInsuranceTypes = () => {
-  return axios.get(`${baseUrl}/DanhSachLBH`);
+  return axios.get(`${API_URL}/api/LoaiBaoHiem/DanhSachLBH`);
 };
 
 // Tạo loại bảo hiểm mới
 export const createInsuranceType = (data) => {
-  return axios.post(`${baseUrl}/TaoLBH`, data);
+  return axios.post(`${API_URL}/api/LoaiBaoHiem/TaoLBH`, data);
 };
 
 // Cập nhật loại bảo hiểm
 export const updateInsuranceType = (data) => {
-  return axios.put(`${baseUrl}/CapNhatLBH/${data.MALBH}`, data);
+  return axios.put(`${API_URL}/api/LoaiBaoHiem/CapNhatLBH/${data.MALBH}`, data);
 };
 
 // Xóa loại bảo hiểm
 export const deleteInsuranceType = (id) => {
-    return axios.delete(`${baseUrl}/XoaLBH/${id}`);
+    return axios.delete(`${API_URL}/api/LoaiBaoHiem/XoaLBH/${id}`);
   };
   
 
 // Lấy mã loại bảo hiểm mới
 export const getNewInsuranceCode = () => {
-  return axios.get(`${baseUrl}/MaLBH`);
+  return axios.get(`${API_URL}/api/LoaiBaoHiem/MaLBH`);
 };

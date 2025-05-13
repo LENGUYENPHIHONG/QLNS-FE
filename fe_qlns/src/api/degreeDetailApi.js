@@ -38,6 +38,6 @@ export const deleteDegreeDetail = (id) => {
 
 // Lấy danh sách nhân viên để chọn
 export const fetchEmployees = () => {
-    return axios.get("http://localhost:5077/api/NhanVien/DanhSach");
+    return axios.get(`${API_URL}/api/NhanVien/DanhSach`);
   };
   

@@ -1,9 +1,9 @@
 // src/api/leaveTypeApi.js
 import axios from "axios";
-const BASE_URL = "http://localhost:5077/api/LoaiPhep";
+const API_URL = process.env.REACT_APP_API_URL
 
-export const getAutoCode = () => axios.get(`${BASE_URL}/MaLP`);
-export const getAllLeaveTypes = () => axios.get(`${BASE_URL}/DanhSachLP`);
-export const createLeaveType = (data) => axios.post(`${BASE_URL}/TaoLP`, data);
-export const updateLeaveType = (id, data) => axios.put(`${BASE_URL}/CapNhatLP/${id}`, data);
-export const deleteLeaveType = (id) => axios.delete(`${BASE_URL}/XoaLP/${id}`);
+export const getAutoCode = () => axios.get(`${API_URL}/api/LoaiPhep/MaLP`);
+export const getAllLeaveTypes = () => axios.get(`${API_URL}/api/LoaiPhep/DanhSachLP`);
+export const createLeaveType = (data) => axios.post(`${API_URL}/api/LoaiPhep/TaoLP`, data);
+export const updateLeaveType = (id, data) => axios.put(`${API_URL}/api/LoaiPhep/CapNhatLP/${id}`, data);
+export const deleteLeaveType = (id) => axios.delete(`${API_URL}/api/LoaiPhep/XoaLP/${id}`);

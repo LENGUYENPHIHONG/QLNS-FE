@@ -1,19 +1,19 @@
 // src/api/contractTypeApi.js
 import axios from "axios";
 
-const BASE_URL = "http://localhost:5077/api/LoaiHopDong";
+const API_URL = process.env.REACT_APP_API_URL
 
 export const fetchContractTypes = () =>
-  axios.get(`${BASE_URL}/DanhSachLHD`);
+  axios.get(`${API_URL}/api/LoaiHopDong/DanhSachLHD`);
 
 export const createContractType = (data) =>
-  axios.post(`${BASE_URL}/TaoLHD`, data);
+  axios.post(`${API_URL}/api/LoaiHopDong/TaoLHD`, data);
 
 export const deleteContractType = (malhd) =>
-  axios.delete(`${BASE_URL}/DeleteLHD`, { data: { MALHD: malhd } });
+  axios.delete(`${API_URL}/api/LoaiHopDong/DeleteLHD`, { data: { MALHD: malhd } });
 
 export const updateContractType = (data) =>
-  axios.put(`${BASE_URL}/CapNhatLHD`, data);
+  axios.put(`${API_URL}/api/LoaiHopDong/CapNhatLHD`, data);
 
 export const getNewContractTypeCode = () =>
-  axios.get(`${BASE_URL}/MaLHD`);
+  axios.get(`${API_URL}/api/LoaiHopDong/MaLHD`);

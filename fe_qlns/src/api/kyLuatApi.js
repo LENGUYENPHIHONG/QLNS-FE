@@ -1,16 +1,16 @@
 // src/api/kyLuatApi.js
 import axios from 'axios';
 
-const BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:5077';
-const KL_ENDPOINT = '/api/KyLuat';
+const BASE_URL = process.env.REACT_APP_API_URL 
 
 export const getMaKL = async () => {
-  const res = await axios.get(`${BASE_URL}${KL_ENDPOINT}/MaKL`);
+  const res = await axios.get(`${BASE_URL}/api/KyLuat/MaKL`);
   return res.data.code;
 };
 
+
 export const getDanhSachKL = async (params) => {
-  const res = await axios.get(`${BASE_URL}${KL_ENDPOINT}/DanhSachKL`, {
+  const res = await axios.get(`${BASE_URL}/api/KyLuat/DanhSachKL`, {
     params: {
       maNhanVien: params.maNhanVien,
       year: params.year,
@@ -24,38 +24,38 @@ export const getDanhSachKL = async (params) => {
 };
 
 export const addKyLuat = async (data) => {
-  const res = await axios.post(`${BASE_URL}${KL_ENDPOINT}/KyLuat`, data);
+  const res = await axios.post(`${BASE_URL}/api/KyLuat/KyLuat`, data);
   return res.data;
 };
 
 export const updateKyLuat = async (ma, data) => {
-  const res = await axios.put(`${BASE_URL}${KL_ENDPOINT}/CapNhatKL/${ma}`, data);
+  const res = await axios.put(`${BASE_URL}/api/KyLuat/CapNhatKL/${ma}`, data);
   return res.data;
 };
 
 export const deleteKyLuat = async (ma) => {
-  const res = await axios.delete(`${BASE_URL}${KL_ENDPOINT}/XoaKL/${ma}`);
+  const res = await axios.delete(`${BASE_URL}/api/KyLuat/XoaKL/${ma}`);
   return res.data;
 };
 
 export const approveKyLuat = async (ma) => {
-  const res = await axios.post(`${BASE_URL}${KL_ENDPOINT}/PhepDuyetKL/${ma}`);
+  const res = await axios.post(`${BASE_URL}/api/KyLuat/PhepDuyetKL/${ma}`);
   return res.data;
 };
 
 export const rejectKyLuat = async (ma) => {
-  const res = await axios.post(`${BASE_URL}${KL_ENDPOINT}/TuChoiKL/${ma}`);
+  const res = await axios.post(`${BASE_URL}/api/KyLuat/TuChoiKL/${ma}`);
   return res.data;
 };
 
 export const cancelKyLuat = async (ma, data) => {
-  const res = await axios.post(`${BASE_URL}${KL_ENDPOINT}/HuyKL/${ma}`, data);
+  const res = await axios.post(`${BASE_URL}/api/KyLuat/HuyKL/${ma}`, data);
   return res.data;
 };
 
 export const importKyLuatFromExcel = async (formData) => {
   const res = await axios.post(
-    `${BASE_URL}${KL_ENDPOINT}/ImportKyLuat`,
+    `${BASE_URL}/api/KyLuat/ImportKyLuat`,
     formData,
     {
       headers: { 'Content-Type': 'multipart/form-data' },

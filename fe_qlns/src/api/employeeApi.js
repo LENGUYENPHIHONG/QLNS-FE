@@ -1,21 +1,21 @@
 // src/api/employeeApi.js
 import axios from "axios";
 
-const BASE_URL = "http://localhost:5077/api/NhanVien";
+const API_URL = process.env.REACT_APP_API_URL
 
 export const getEmployeeDetail = (manv) => 
-  axios.get(`http://localhost:5077/api/NhanVien/ThongTinNhanVien/${manv}`);
+  axios.get(`${API_URL}/api/NhanVien/ThongTinNhanVien/${manv}`);
 
-export const getNewEmployeeCode = () => axios.get(`${BASE_URL}/MaNV`);
+export const getNewEmployeeCode = () => axios.get(`${API_URL}/api/NhanVien/MaNV`);
 
-export const createEmployee = (data) => axios.post(`${BASE_URL}/TaoNV`, data);
+export const createEmployee = (data) => axios.post(`${API_URL}/api/NhanVien/TaoNV`, data);
 
 export const fetchEmployees = (page = 1, pageSize = 20) =>
-  axios.get(`${BASE_URL}/DanhSachNV`, {
+  axios.get(`${API_URL}/api/NhanVien/DanhSachNV`, {
     params: { page, pageSize },
   });
 
-export const deleteEmployee = (manv) => axios.delete(`${BASE_URL}/DeleteNV/${manv}`);
+export const deleteEmployee = (manv) => axios.delete(`${API_URL}/api/NhanVien/DeleteNV/${manv}`);
 export const updateEmployee = (manv, data) =>
-  axios.put(`http://localhost:5077/api/NhanVien/CapNhatNV/${manv}`, data);
+  axios.put(`${API_URL}/api/NhanVien/CapNhatNV/${manv}`, data);
 
