@@ -8,14 +8,14 @@ const API_URL = process.env.REACT_APP_API_URL
  * @param {{ tenDangNhap: string, matKhau: string, maNV?: string, email?: string, vaiTroId: number }} data
  */
 export const createAccount = (data) => {
-  return axios.post(`${API_URL}/Auth/tao-tai-khoan`, data);
+  return axios.post(`${API_URL}api/Auth/tao-tai-khoan`, data);
 };
 
 /**
  * Lấy danh sách vai trò
  */
 export const getRoles = () => {
-  return axios.get(`${API_URL}/Auth/danh-sach-vai-tro`);
+  return axios.get(`${API_URL}api/Auth/danh-sach-vai-tro`);
 };
 
 /**
@@ -45,7 +45,7 @@ export const logout = () => {
  * Lấy danh sách tất cả tài khoản
  */
 export const getAccounts = () => {
-  return axios.get(`${API_URL}/Auth/danh-sach-tai-khoan`);
+  return axios.get(`${API_URL}api/Auth/danh-sach-tai-khoan`);
 };
 
 /**
@@ -53,7 +53,7 @@ export const getAccounts = () => {
  * @param {{ Id: number, tenDangNhap?: string, email?: string, vaiTroIds?: number[] }} data
  */
 export const updateAccount = (data) => {
-  return axios.put(`${API_URL}/Auth/cap-nhat-tai-khoan`, data);
+  return axios.put(`${API_URL}api/Auth/cap-nhat-tai-khoan`, data);
 };
 
 /**
@@ -61,5 +61,5 @@ export const updateAccount = (data) => {
  * @param {number} id
  */
 export const deleteAccount = (id) => {
-  return axios.delete(`${API_URL}/Auth/xoa-tai-khoan/${id}`);
+  return axios.delete(`${API_URL}api/Auth/xoa-tai-khoan/${id}`);
 };
