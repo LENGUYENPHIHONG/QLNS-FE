@@ -17,6 +17,7 @@ import {
   getEmployeeDetail,
   updateEmployee
 } from "../../api/employeeApi";
+import { toast } from 'react-toastify';
 import {
   getDepartments,
   getPositions,
@@ -76,7 +77,7 @@ const EmployeeListPage = () => {
         });
       }
     } catch {
-      message.error("Không thể tải danh sách nhân viên");
+      toast.error("Không thể tải danh sách nhân viên");
     } finally {
       setLoading(false);
     }
@@ -100,7 +101,7 @@ const EmployeeListPage = () => {
       setEmployeeTypes(lnv.data?.Data || []);
       
     } catch (error) {
-      message.error("Lỗi khi tải dropdown");
+      toast.error("Lỗi khi tải dropdown");
     }
     
   };
@@ -148,16 +149,16 @@ const EmployeeListPage = () => {
       }
 
       if (res.data?.Success) {
-        message.success(isEditMode ? "Cập nhật thành công" : "Thêm thành công");
+        toast.success(isEditMode ? "Cập nhật thành công" : "Thêm thành công");
         setIsModalOpen(false);
         form.resetFields();
         setEditEmployee(null);
         loadInitialData();
       } else {
-        message.error(res.data?.Message || "Lỗi xử lý dữ liệu");
+        toast.error(res.data?.Message || "Lỗi xử lý dữ liệu");
       }
     } catch {
-      message.error("Lỗi gọi API nhân viên");
+      toast.error("Lỗi gọi API nhân viên");
     } finally {
       setLoading(false);
     }
@@ -170,10 +171,10 @@ const EmployeeListPage = () => {
         setSelectedEmployee(res.data.Data);
         setIsDetailModalOpen(true);
       } else {
-        message.error("Không lấy được chi tiết nhân viên");
+        toast.error("Không lấy được chi tiết nhân viên");
       }
     } catch {
-      message.error("Lỗi khi tải chi tiết nhân viên");
+      toast.error("Lỗi khi tải chi tiết nhân viên");
     }
   };
 
@@ -207,7 +208,7 @@ const EmployeeListPage = () => {
         setIsModalOpen(true); // gọi sau khi set xong dữ liệu
       }
     } catch {
-      message.error("Không lấy được dữ liệu nhân viên");
+      toast.error("Không lấy được dữ liệu nhân viên");
     }
   };
   
@@ -217,13 +218,13 @@ const EmployeeListPage = () => {
     try {
       const res = await deleteEmployee(manv);
       if (res.data?.Success) {
-        message.success("Đã xóa nhân viên");
+        toast.success(res.data?.Message);
         loadInitialData();
       } else {
-        message.error(res.data?.Message || "Lỗi khi xóa");
+        toast.error(res.data?.Message || "Lỗi khi xóa");
       }
     } catch {
-      message.error("Lỗi khi xóa nhân viên");
+      toast.error("Lỗi khi xóa nhân viên");
     }
   };
 

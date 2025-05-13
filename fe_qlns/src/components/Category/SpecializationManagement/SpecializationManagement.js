@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import {
-  Layout, Form, Input, Button, Table, Space, Modal, message
+  Layout, Form, Input, Button, Table, Space, Modal, Popconfirm
 } from "antd";
 import {
   SearchOutlined, EditOutlined, DeleteOutlined
@@ -12,7 +12,7 @@ import {
   deleteSpecialization,
   getNewCode
 } from "../../../api/specializationApi";
-
+import { toast } from 'react-toastify';
 const { Content } = Layout;
 
 const SpecializationManagement = () => {
@@ -51,7 +51,7 @@ const SpecializationManagement = () => {
         form.setFieldsValue({ specializationCode: codeRes.data.code });
       }
     } catch (err) {
-      console.error("Lỗi khi lấy mã chuyên môn:", err);
+      toast.error(err.response.data.Message);
     }
   };
 
@@ -70,10 +70,10 @@ const SpecializationManagement = () => {
       } else {
         setSpecializations([]);
         setFilteredSpecializations([]);
-        message.warning("Không có dữ liệu.");
+        toast.warning("Không có dữ liệu.");
       }
     } catch (err) {
-      message.error("Lỗi khi tải danh sách chuyên môn.");
+      toast.error("Lỗi khi tải danh sách chuyên môn.");
     } finally {
       setLoading(false);
     }
@@ -88,15 +88,15 @@ const SpecializationManagement = () => {
       };
       const res = await createSpecialization(data);
       if (res.data?.Success) {
-        message.success("Thêm chuyên môn thành công!");
+        toast.success(res.data?.Message);
         form.resetFields();
         await loadSpecializations();
         await generateNewCode();
       } else {
-        message.error(res.data?.Message || "Thêm thất bại.");
+        toast.error(res.data?.Message || "Thêm thất bại.");
       }
     } catch (err) {
-      message.error("Lỗi khi thêm chuyên môn.");
+      toast.error(err.response.data.Message);
     } finally {
       setLoading(false);
     }
@@ -120,14 +120,14 @@ const SpecializationManagement = () => {
       };
       const res = await updateSpecialization(payload);
       if (res.data?.Success || res.data?.MA) {
-        message.success("Cập nhật thành công!");
+        toast.success(res.data?.Success);
         setEditing(false);
         await loadSpecializations();
       } else {
-        message.error(res.data?.Message || "Cập nhật thất bại.");
+        toast.error(res.data?.Success || "Cập nhật thất bại.");
       }
     } catch (err) {
-      message.error("Lỗi khi cập nhật.");
+      toast.error("Lỗi khi cập nhật.");
     }
   };
 
@@ -137,13 +137,13 @@ const SpecializationManagement = () => {
     try {
       const res = await deleteSpecialization(id);
       if (res.data?.Success) {
-        message.success("Xóa thành công!");
+        toast.success(res.data?.Message);
       } else {
-        message.error(res.data?.Message || "Xóa thất bại.");
+        toast.error(res.data?.Message || "Xóa thất bại.");
         await loadSpecializations();
       }
     } catch (err) {
-      message.error("Lỗi khi xóa.");
+      toast.error("Lỗi khi xóa.");
       await loadSpecializations();
     }
   };
@@ -167,13 +167,14 @@ const SpecializationManagement = () => {
           <Button icon={<EditOutlined />} onClick={() => handleEdit(record)}>
             Sửa
           </Button>
-          <Button
-            danger
-            icon={<DeleteOutlined />}
-            onClick={() => handleDelete(record.id)}
+          <Popconfirm
+            title="Bạn có chắc muốn xóa?"
+            onConfirm={() => handleDelete(record.id)}
+            okText="Xóa"
+            cancelText="Hủy"
           >
-            Xóa
-          </Button>
+            <Button icon={<DeleteOutlined />} danger />
+          </Popconfirm>
         </Space>
       ),
     },

@@ -3,7 +3,7 @@ import React, { useState } from "react";
 import { Form, Input, Button, Typography, message } from "antd";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
-
+import { toast } from 'react-toastify';
 const { Title } = Typography;
 
 const LoginPage = () => {
@@ -26,12 +26,12 @@ const LoginPage = () => {
         withCredentials: true,
       });
       
-      alert("Đăng nhập thành công!");
+      toast("Đăng nhập thành công!");
       //console.log("🔍 Kết quả đăng nhập:", res);
       window.location.href = "/dashboard";
       
     } catch (err) {
-      alert("Tên đăng nhập hoặc mật khẩu không đúng!");
+      toast("Tên đăng nhập hoặc mật khẩu không đúng!");
     }
     setLoading(false);
   };

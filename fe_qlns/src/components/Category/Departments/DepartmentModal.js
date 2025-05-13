@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Modal, Form, Input, Button, Space, Table, message, Popconfirm } from "antd";
+import { Modal, Form, Input, Button, Space, Table, Popconfirm } from "antd";
 import { EditOutlined, DeleteOutlined } from "@ant-design/icons";
 import {
   getNewDepartmentCode,
@@ -8,6 +8,8 @@ import {
   updateDepartment,
   deleteDepartment,
 } from "../../../api/departmentModalApi"; // Đảm bảo file này có các hàm API
+
+import { toast } from 'react-toastify';
 
 const DepartmentModal = ({ visible, onCancel }) => {
   const [form] = Form.useForm();
@@ -30,7 +32,7 @@ const DepartmentModal = ({ visible, onCancel }) => {
       const res = await fetchDepartments();
       setDepartments(res.data.Data);
     } catch (err) {
-      message.error("Không thể tải danh sách phòng ban");
+      toast.error(err.response.data.Message);
     } finally {
       setLoading(false);
     }
@@ -41,7 +43,7 @@ const DepartmentModal = ({ visible, onCancel }) => {
       const res = await getNewDepartmentCode();
       form.setFieldsValue({ departmentCode: res.data.code });
     } catch {
-      message.warning("Không thể lấy mã phòng ban mới");
+      toast.warning("Không thể lấy mã phòng ban mới");
     }
   };
 
@@ -55,18 +57,18 @@ const DepartmentModal = ({ visible, onCancel }) => {
 
     try {
       if (editingKey) {
-        await updateDepartment(data);
-        message.success("Cập nhật thành công");
+        var res = await updateDepartment(data);
+        toast.success(res.data?.Message);
       } else {
-        await createDepartment(data);
-        message.success("Thêm thành công");
+        var res = await createDepartment(data);
+        toast.success(res.data?.Message);
       }
       await loadDepartments();
       form.resetFields();
       setEditingKey(null);
       getNewCode();
     } catch (err) {
-      message.error(err?.response?.data?.Message || "Lỗi xử lý");
+      toast.error(err.response.data.Message);
     } finally {
       setLoading(false);
     }
@@ -83,11 +85,11 @@ const DepartmentModal = ({ visible, onCancel }) => {
   const handleDelete = async (record) => {
     setLoading(true);
     try {
-      await deleteDepartment({ MAPB: record.MAPB });
-      message.success("Xóa thành công");
+      var res = await deleteDepartment({ MAPB: record.MAPB });
+      toast.success(res.data?.Message);
       await loadDepartments();
     } catch (err) {
-      message.error(err?.response?.data?.Message || "Lỗi khi xóa");
+      toast.error(err?.response?.data?.Message || "Lỗi khi xóa");
     } finally {
       setLoading(false);
     }
@@ -160,7 +162,6 @@ const DepartmentModal = ({ visible, onCancel }) => {
             <Button
               type="primary"
               htmlType="submit"
-              loading={loading}
               style={{ backgroundColor: "#3e0fe6" }}
             >
               {editingKey ? "Cập nhật" : "Thêm"}

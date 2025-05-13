@@ -1,26 +1,28 @@
+// src/components/InfoCard/InfoCard.js
 import React from 'react';
 import { Card, CardContent, Typography } from '@mui/material';
-import PeopleIcon from '@mui/icons-material/People'; // Icon cho nhân viên
-import AssignmentIcon from '@mui/icons-material/Assignment'; // Icon cho hợp đồng
-import BusinessIcon from '@mui/icons-material/Business'; // Icon cho phòng ban
-import './infocard.css'; // Import file CSS
+import './infocard.css';
 
-const InfoCard = ({ title, value, icon, color }) => {
-  return (
-    <Card
-      className="card" // Sử dụng class CSS từ file infocard.css
-      sx={{ backgroundColor: color}} // Màu nền từ props
-    >
-      <CardContent>
-        <Typography variant="h5" component="div" gutterBottom className="title">
-          {icon} {title}
+/**
+ * InfoCard
+ * @param {{ title: string; value: number|string; icon: React.ReactNode; color: string; }} props
+ */
+const InfoCard = ({ title, value, icon, color }) => (
+  <Card className="info-card" style={{ borderLeft: `5px solid ${color}` }}>
+    <CardContent className="info-card-content">
+      <div className="info-card-icon" style={{ color }}>
+        {icon}
+      </div>
+      <div className="info-card-text">
+        <Typography variant="subtitle2" className="info-card-title">
+          {title}
         </Typography>
-        <Typography variant="h4" component="div" className="value">
+        <Typography variant="h4" className="info-card-value">
           {value}
         </Typography>
-      </CardContent>
-    </Card>
-  );
-};
+      </div>
+    </CardContent>
+  </Card>
+);
 
 export default InfoCard;

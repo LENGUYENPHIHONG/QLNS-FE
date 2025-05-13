@@ -7,7 +7,8 @@ import {
   AppstoreOutlined,
   ScheduleOutlined,
   TrophyOutlined,
-  SafetyOutlined     
+  SafetyOutlined,
+  BookOutlined       
 } from "@ant-design/icons";
 import { Link, useLocation } from "react-router-dom";
 
@@ -25,15 +26,17 @@ const Sidebar = ({ collapsed, onToggle }) => {
   useEffect(() => {
     const path = location.pathname;
     setSelectedKey(path);
-    if (path.includes("/danhsachnhanvien") || path.includes("/taotaikhoannhanvien")) {
+    if (path.includes("/danhsachnhanvien") || path.includes("/kynangnhanvien") ||path.includes("/taotaikhoannhanvien")) {
       setOpenKeys(["user"]);
     } else if (path.includes("/danhsachhopdong")) {
       setOpenKeys(["contract"]);
     } else if (path.includes("/danhsachbaohiem")) {
       setOpenKeys(["insurance"]);
-    } else if (path.includes("/dangkinghiphep") || path.includes("/lichsunghiphep")) {
+    }else if (path.includes("/danhsachdaotao")) {
+      setOpenKeys(["training"]);
+    } else if (path.includes("/dangkinghiphep") || path.includes("/yeardetail")) {
       setOpenKeys(["leave"]);
-    } else if (path.includes("/khenthuong") || path.includes("/kiluat")) {
+    } else if (path.includes("/khenthuong") || path.includes("/kyluat")) {
       setOpenKeys(["reward"]);
     } else if (
       path.includes("/phongban") ||
@@ -42,11 +45,11 @@ const Sidebar = ({ collapsed, onToggle }) => {
       path.includes("/trinhdo") ||
       path.includes("/loainhanvien") ||
       path.includes("/loainghiphep") ||
-      path.includes("/lichlamviec") ||
       path.includes("/loaihopdong") ||
       path.includes("/loaibaohiem") ||
       path.includes("/loaichuyenmon") ||
-      path.includes("/loaikynang") 
+      path.includes("/loaikynang") ||
+      path.includes("/loaidaotao")
     ) {
       setOpenKeys(["category"]);
     } else {
@@ -121,6 +124,9 @@ const Sidebar = ({ collapsed, onToggle }) => {
           <Menu.Item key="/danhsachnhanvien">
             <Link to="/danhsachnhanvien">Danh sách nhân viên</Link>
           </Menu.Item>
+          <Menu.Item key="/kynangnhanvien">
+            <Link to="/kynangnhanvien">Kỹ năng nhân viên</Link>
+          </Menu.Item>
           <Menu.Item key="/taotaikhoannhanvien">
             <Link to="/taotaikhoannhanvien">Tạo tài khoản </Link>
           </Menu.Item>
@@ -151,6 +157,17 @@ const Sidebar = ({ collapsed, onToggle }) => {
           </Menu.Item>
         </SubMenu>
 
+         {/* Đào tạo */}
+         <SubMenu
+          key="training"
+          icon={<BookOutlined  style={{ fontSize: "24px" }} />}
+          title="Đào tạo"
+        >
+          <Menu.Item key="/danhsachdaotao">
+            <Link to="/danhsachdaotao">Danh sách đào tạo</Link>
+          </Menu.Item>
+        </SubMenu>
+
         {/* Nghỉ phép */}
         <SubMenu
           key="leave"
@@ -160,8 +177,8 @@ const Sidebar = ({ collapsed, onToggle }) => {
           <Menu.Item key="/dangkinghiphep">
             <Link to="/dangkinghiphep">Đăng ký nghỉ phép</Link>
           </Menu.Item>
-          <Menu.Item key="/lichsunghiphep">
-            <Link to="/lichsunghiphep">Lịch sử nghỉ phép</Link>
+          <Menu.Item key="/yeardetail">
+            <Link to="/yeardetail">Chi tiết phép</Link>
           </Menu.Item>
         </SubMenu>
         {/* Khen thưởng - Kỷ luật */}
@@ -205,16 +222,17 @@ const Sidebar = ({ collapsed, onToggle }) => {
           <Menu.Item key="/loainghiphep">
             <Link to="/loainghiphep">Loại nghỉ phép</Link>
           </Menu.Item>
-          <Menu.Item key="/lichlamviec">
-            <Link to="/lichlamviec">Lịch làm việc</Link>
-          </Menu.Item>
           <Menu.Item key="/loaihopdong">
             <Link to="/loaihopdong">Loại hợp đồng</Link>
           </Menu.Item>
           <Menu.Item key="/loaibaohiem">
             <Link to="/loaibaohiem">Loại bảo hiểm</Link>
-          </Menu.Item><Menu.Item key="/loaikynang">
+          </Menu.Item>
+          <Menu.Item key="/loaikynang">
             <Link to="/loaikynang">Loại kỹ năng</Link>
+          </Menu.Item>
+          <Menu.Item key="/loaidaotao">
+            <Link to="/loaidaotao">Loại đào tạo</Link>
           </Menu.Item>
         </SubMenu>
       </Menu>

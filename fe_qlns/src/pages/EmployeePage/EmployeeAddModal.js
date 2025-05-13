@@ -13,6 +13,7 @@ import { UploadOutlined } from "@ant-design/icons";
 import { getNewEmployeeCode } from "../../api/employeeApi";
 import "./EmployeeAddModal.css";
 import dayjs from "dayjs";
+import { toast } from 'react-toastify';
 const { Option } = Select;
 
 const EmployeeAddModal = ({
@@ -48,7 +49,7 @@ const EmployeeAddModal = ({
               form.setFieldsValue({ id: res.data.code });
             }
           } catch {
-            message.error("Không thể lấy mã nhân viên");
+            toast.error("Không thể lấy mã nhân viên");
           }
         };
         fetchCode();
@@ -74,7 +75,7 @@ const EmployeeAddModal = ({
       try {
         imageBase64 = await toBase64(imageFile);
       } catch {
-        message.error("Không thể xử lý ảnh");
+        toast.error("Không thể xử lý ảnh");
       }
     }
 

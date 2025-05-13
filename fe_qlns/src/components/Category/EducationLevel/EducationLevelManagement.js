@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from "react";
 import {
-  Layout, Form, Input, Button, Table, Space, Modal, message
+  Layout, Form, Input, Button, Table, Space, Modal, Popconfirm
 } from "antd";
 import {
   SearchOutlined, EditOutlined, DeleteOutlined
 } from "@ant-design/icons";
+import { toast } from 'react-toastify';
+
 import {
   fetchEducationLevels,
   createEducationLevel,
@@ -28,7 +30,6 @@ const EducationLevelManagement = () => {
   useEffect(() => {
     loadLevels();
     generateNewCode();
-    message.error("Test lỗi popup");
   }, []);
 
   useEffect(() => {
@@ -52,7 +53,7 @@ const EducationLevelManagement = () => {
         form.setFieldsValue({ educationCode: res.data.code });
       }
     } catch (err) {
-      message.error("Không thể tạo mã trình độ mới.");
+      toast.error(err.response.data.Message);
     }
   };
 
@@ -71,10 +72,10 @@ const EducationLevelManagement = () => {
       } else {
         setEducationLevels([]);
         setFilteredLevels([]);
-        message.warning("Không có dữ liệu trình độ.");
+        toast.warning("Không có dữ liệu trình độ.");
       }
     } catch (err) {
-      message.error("Lỗi khi tải danh sách trình độ.");
+      toast.error(err.response.data.Message);
     } finally {
       setLoading(false);
     }
@@ -94,13 +95,13 @@ const EducationLevelManagement = () => {
         //alert("Thêm trình độ thành công!");
         form.resetFields();
         await loadLevels(); // reload danh sách
-        await generateNewCode(); // tạo mã mới sau khi thêm
+        await generateNewCode();
+        toast.success(res.data?.Message); // tạo mã mới sau khi thêm
       } else {
-        alert(res.data?.Message || "Thêm thất bại.");
+        toast.success(res.data?.Message);
       }
-    } catch (error) {
-      console.error("❌ Lỗi từ API:", error);
-      alert(error.response?.data?.Message || "Đã xảy ra lỗi khi thêm trình độ.");
+    } catch (err) {
+      toast.error(err.response.data.Message);
     } finally {
       setLoading(false);
     }
@@ -125,14 +126,14 @@ const EducationLevelManagement = () => {
       };
       const res = await updateEducationLevel(payload);
       if (res.data?.Success || res.data?.MA) {
-        message.success("Cập nhật thành công!");
         setEditing(false);
         await loadLevels();
+        toast.success(res.data?.Success);
       } else {
-        message.error(res.data?.Message || "Cập nhật thất bại.");
+        toast.error(res.data?.Message || "Cập nhật thất bại.");
       }
     } catch (err) {
-      message.error("Lỗi khi cập nhật.");
+      toast.error(err.response.data.Message);
     }
   };
 
@@ -140,13 +141,13 @@ const EducationLevelManagement = () => {
     try {
       const res = await deleteEducationLevel({ MATD: id });
       if (res.data?.Success) {
-        message.success("Xóa thành công!");
+        toast.success(res.data?.Success);
         await loadLevels();
       } else {
-        message.error(res.data?.Message || "Xóa thất bại.");
+        toast.error(res.data?.Message || "Xóa thất bại.");
       }
     } catch (err) {
-      message.error("Lỗi khi xóa.");
+      toast.error(err.response.data.Message);
     }
   };
 
@@ -169,9 +170,14 @@ const EducationLevelManagement = () => {
           <Button icon={<EditOutlined />} onClick={() => handleEdit(record)}>
             Sửa
           </Button>
-          <Button danger icon={<DeleteOutlined />} onClick={() => handleDelete(record.id)}>
-            Xóa
-          </Button>
+          <Popconfirm
+            title="Bạn có chắc muốn xóa?"
+            onConfirm={() => handleDelete(record.id)}
+            okText="Xóa"
+            cancelText="Hủy"
+          >
+            <Button icon={<DeleteOutlined />} danger />
+          </Popconfirm>
         </Space>
       ),
     },
@@ -214,7 +220,7 @@ const EducationLevelManagement = () => {
                 type="primary"
                 htmlType="submit"
                 style={{ backgroundColor: "#3e0fe6", borderColor: "#3e0fe6" }}
-                loading={loading}
+                
               >
                 Thêm
               </Button>

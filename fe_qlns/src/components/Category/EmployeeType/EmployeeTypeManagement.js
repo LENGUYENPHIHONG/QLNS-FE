@@ -10,6 +10,7 @@ import {
   Space,
   message,
 } from "antd";
+import { toast } from 'react-toastify';
 import {
   SearchOutlined,
   PlusOutlined,
@@ -41,7 +42,7 @@ const EmployeeTypeManagement = () => {
       }));
       setEmployeeTypes(data);
     } catch (err) {
-      message.error("Không thể tải loại nhân viên!");
+      toast.error(err.response.data.Message);
     }
   };
 
@@ -177,7 +178,7 @@ const EmployeeTypeManagement = () => {
                 type="primary"
                 htmlType="submit"
                 style={{ backgroundColor: "#3e0fe6" }}
-                loading={loading}
+                
               >
                 Thêm
               </Button>

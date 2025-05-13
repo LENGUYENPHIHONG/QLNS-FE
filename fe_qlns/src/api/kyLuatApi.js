@@ -52,3 +52,14 @@ export const cancelKyLuat = async (ma, data) => {
   const res = await axios.post(`${BASE_URL}${KL_ENDPOINT}/HuyKL/${ma}`, data);
   return res.data;
 };
+
+export const importKyLuatFromExcel = async (formData) => {
+  const res = await axios.post(
+    `${BASE_URL}${KL_ENDPOINT}/ImportKyLuat`,
+    formData,
+    {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    }
+  );
+  return res.data;
+};

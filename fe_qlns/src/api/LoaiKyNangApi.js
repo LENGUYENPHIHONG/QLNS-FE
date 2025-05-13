@@ -3,9 +3,8 @@ import axios from "axios";
 const API_BASE = "http://localhost:5077/api/LoaiKyNang";
 
 // Lấy danh sách loại kỹ năng (nếu backend có endpoint GET /api/LoaiKyNang)
-export const fetchSkillTypes = () => {
-  return axios.get(`${API_BASE}`);
-};
+export const fetchSkillTypes = () => 
+  axios.get(`${API_BASE}/DanhSachKyNangTheoLoai`);
 
 // Lấy chi tiết một loại kỹ năng kèm kỹ năng & cấp độ
 export const getSkillTypeDetails = (maLKN) => {

@@ -1,11 +1,10 @@
 import React, { useState, useEffect } from "react";
 import {
   Layout, Form, Input, Button, Table, Space,
-  Modal, message, Select, Tag
+  Modal, Popconfirm, Select, Tag
 } from "antd";
 import {
-  SearchOutlined, DeleteOutlined,
-  CheckCircleOutlined, PlusOutlined,
+  SearchOutlined, DeleteOutlined, PlusOutlined,
   EditOutlined, ReloadOutlined
 } from "@ant-design/icons";
 import dayjs from "dayjs";
@@ -16,11 +15,10 @@ import {
   updateInsurance,
   deleteInsurance,
   renewInsurances,
-  fetchInsuranceById,
   getEmployees,
   getInsuranceTypes
 } from "../../api/insuranceDetailApi";
-
+import { toast } from 'react-toastify';
 const { Content } = Layout;
 const { Option } = Select;
 
@@ -45,12 +43,13 @@ export default function InsuranceManagement() {
         getEmployees(),
         getInsuranceTypes()
       ]);
+      console.log("🚀 loadAll:", insRes.data, empRes.data, typeRes.data);
       if (insRes.data?.Success) setData(insRes.data.Data);
       if (empRes.data?.Data)  setEmps(empRes.data.Data);
       if (typeRes.data?.Data) setTypes(typeRes.data.Data);
     } catch (err) {
-      console.error("❌ loadAll:", err);
-      message.error("Lỗi tải dữ liệu");
+      //console.error("❌ loadAll:", err);
+      toast.error("Lỗi tải dữ liệu");
     } finally {
       setLoading(false);
     }
@@ -78,30 +77,30 @@ export default function InsuranceManagement() {
       if (editingId) {
         // cập nhật
         const current = data.find(i => i.Id === editingId);
-        await updateInsurance(editingId, {
+        var res = await updateInsurance(editingId, {
           MANV: values.MANV,
           MALBH: values.MALBH,
           CHUKY: values.CHUKY,
           TRANGTHAI: current.TRANGTHAI
         });
-        message.success("Cập nhật thành công");
+        toast.success(res.data?.Message);
       } else {
         // tạo mới
-        await createInsurance({
+        var res = await createInsurance({
           MANV: values.MANV,
           MALBH: values.MALBH,
           CHUKY: values.CHUKY,
           TRANGTHAI: ""
         });
-        message.success("Tạo mới thành công");
+        toast.success(res.data?.Message);
       }
       setModalVisible(false);
       form.resetFields();
       setSelectedKeys([]);
       await loadAll();
     } catch (err) {
-      console.error("❌ onFinish:", err, err.response?.data);
-      message.error(err.response?.data?.Message || err.message);
+      //console.error("❌ onFinish:", err, err.response?.data);
+      toast.error(err.response?.data?.Message || err.message);
     } finally {
       setLoading(false);
     }
@@ -110,12 +109,12 @@ export default function InsuranceManagement() {
   async function onDelete(id) {
     setLoading(true);
     try {
-      await deleteInsurance(id);
-      message.success("Xóa thành công");
+      var res = await deleteInsurance(id);
+      toast.success(res.data?.Message);
       await loadAll();
     } catch (err) {
-      console.error("❌ onDelete:", err);
-      message.error("Xóa thất bại");
+      //console.error("❌ onDelete:", err);
+      toast.error("Xóa thất bại");
     } finally {
       setLoading(false);
     }
@@ -123,17 +122,17 @@ export default function InsuranceManagement() {
 
   async function onRenew() {
     if (!selectedKeys.length) {
-      return message.warning("Chọn ít nhất 1 để gia hạn");
+      return toast.warning("Chọn ít nhất 1 để gia hạn");
     }
     setLoading(true);
     try {
-      await renewInsurances({ BaoHiemIds: selectedKeys });
-      message.success("Gia hạn thành công");
+      var res = await renewInsurances({ BaoHiemIds: selectedKeys });
+      toast.success(res.data?.Message);
       setSelectedKeys([]);
       await loadAll();
     } catch (err) {
-      console.error("❌ onRenew:", err);
-      message.error("Gia hạn thất bại");
+      //console.error("❌ onRenew:", err);
+      toast.error("Gia hạn thất bại");
     } finally {
       setLoading(false);
     }
@@ -209,9 +208,14 @@ export default function InsuranceManagement() {
             Sửa
           </Button>
           {r.TRANGTHAI === "Hết hiệu lực" && (
-            <Button danger onClick={() => onDelete(r.Id)} icon={<DeleteOutlined />}>
-              Xóa
-            </Button>
+            <Popconfirm
+            title="Bạn có chắc muốn xóa?"
+            onConfirm={() => onDelete(r.Id)}
+            okText="Xóa"
+            cancelText="Hủy"
+          >
+            <Button icon={<DeleteOutlined />} danger />
+          </Popconfirm>
           )}
         </Space>
       )

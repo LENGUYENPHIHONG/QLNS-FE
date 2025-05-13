@@ -3,7 +3,7 @@ import { Layout, Form, Input, Select, Button, message, Spin } from "antd";
 import axios from "axios";
 import { fetchEmployees } from "../../api/employeeApi";
 import { getRoles, createAccount } from "../../api/authApi";
-
+import { toast } from 'react-toastify';
 const { Content } = Layout;
 const { Option } = Select;
 
@@ -24,7 +24,7 @@ const EmployeeAccountPage = () => {
         const data = res.data.Data || res.data;
         setRoles(data);
       } catch {
-        message.error('Lỗi khi tải danh sách vai trò');
+        toast.error('Lỗi khi tải danh sách vai trò');
       } finally {
         setLoadingRoles(false);
       }
@@ -41,7 +41,7 @@ const EmployeeAccountPage = () => {
         const list = res.data.Data || [];
         setEmployees(list);
       } catch {
-        message.error('Lỗi khi tải danh sách nhân viên');
+        toast.error('Lỗi khi tải danh sách nhân viên');
       } finally {
         setLoadingEmployees(false);
       }
@@ -53,17 +53,17 @@ const EmployeeAccountPage = () => {
   const onFinish = async (values) => {
     setSubmitting(true);
     try {
-      await createAccount({
+      var res = await createAccount({
         tenDangNhap: values.tenDangNhap,
         matKhau: values.matKhau,
         maNV: values.maNV,
         email: values.email,
         vaiTroId: values.vaiTroId,
       });
-      message.success('Tạo tài khoản thành công!');
+      toast.success(res.data?.Message);
       form.resetFields();
     } catch (err) {
-      message.error(err.response?.data?.Message || 'Lỗi khi tạo tài khoản');
+      toast.error(err.response?.data?.Message || 'Lỗi khi tạo tài khoản');
     } finally {
       setSubmitting(false);
     }

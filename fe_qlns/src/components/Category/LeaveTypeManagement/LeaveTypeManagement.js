@@ -7,11 +7,11 @@ import {
   Select,
   Table,
   Space,
-  message,
   Modal,
   Popconfirm,
   InputNumber
 } from "antd";
+import { toast } from 'react-toastify';
 import {
   SearchOutlined,
   EditOutlined,
@@ -50,7 +50,7 @@ const LeaveTypeManagement = () => {
       const res = await getAllLeaveTypes();
       if (res.data?.Success) setLeaveTypes(res.data.Data);
     } catch (error) {
-      message.error("Lỗi khi tải danh sách loại phép");
+      toast.error("Lỗi khi tải danh sách loại phép");
     } finally {
       setLoading(false);
     }
@@ -62,7 +62,7 @@ const LeaveTypeManagement = () => {
       setAutoCode(res.data?.code);
       form.setFieldsValue({ leaveTypeCode: res.data?.code });
     } catch (error) {
-      message.error("Không lấy được mã loại phép");
+      toast.error("Không lấy được mã loại phép");
     }
   };
 
@@ -77,15 +77,15 @@ const LeaveTypeManagement = () => {
       };
       const res = await createLeaveType(payload);
       if (res.data?.Success) {
-        message.success("Thêm loại nghỉ phép thành công!");
+        toast.success(res.data?.Message);
         form.resetFields();
         await fetchData();
         await fetchAutoCode();
       } else {
-        message.error(res.data?.Message || "Lỗi thêm loại phép");
+        toast.error(res.data?.Message || "Lỗi thêm loại phép");
       }
     } catch (err) {
-      message.error("Lỗi khi gửi yêu cầu thêm loại phép");
+      toast.error("Lỗi khi gửi yêu cầu thêm loại phép");
     } finally {
       setLoading(false);
     }
@@ -102,7 +102,7 @@ const LeaveTypeManagement = () => {
       };
       const res = await updateLeaveType(editingId, payload);
       if (res.data?.Success) {
-        message.success("Cập nhật loại phép thành công!");
+        toast.success(res.data?.Message);
         setIsEditMode(false);
         setEditingId(null);
         modalForm.resetFields();
@@ -110,10 +110,10 @@ const LeaveTypeManagement = () => {
         await fetchData();
         await fetchAutoCode();
       } else {
-        message.error(res.data?.Message || "Cập nhật thất bại");
+        toast.error(res.data?.Message || "Cập nhật thất bại");
       }
     } catch (err) {
-      message.error("Lỗi khi cập nhật loại phép");
+      toast.error("Lỗi khi cập nhật loại phép");
     }
   };
 
@@ -122,13 +122,13 @@ const LeaveTypeManagement = () => {
     try {
       const res = await deleteLeaveType(id);
       if (res.data?.Success) {
-        message.success("Xóa thành công!");
+        toast.success(res.data?.Message);
         await fetchData();
       } else {
-        message.error(res.data?.Message);
+        toast.error(res.data?.Message);
       }
     } catch (error) {
-      message.error("Lỗi khi xóa loại phép");
+      toast.error("Lỗi khi xóa loại phép");
     } finally {
       setLoading(false);
     }
@@ -212,7 +212,7 @@ const LeaveTypeManagement = () => {
           </div>
           <div style={{ display: "flex", justifyContent: "flex-end", marginTop: "-5px" }}>
             <Form.Item>
-              <Button type="primary" htmlType="submit" loading={loading}>
+              <Button type="primary" htmlType="submit">
                 Thêm
               </Button>
             </Form.Item>

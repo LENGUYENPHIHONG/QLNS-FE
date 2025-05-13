@@ -2,9 +2,6 @@ import axios from 'axios';
 
 const api = axios.create({
   baseURL: 'http://localhost:5077/api/ChucVu', // thay đổi nếu backend khác port
-  headers: {
-    'Content-Type': 'application/json',
-  },
 });
 
 export const fetchPositions = () => api.get('/DanhSachCV');

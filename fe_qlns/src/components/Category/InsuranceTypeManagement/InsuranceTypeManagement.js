@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from "react";
 import {
-    Layout, Form, Input, Button, Table, Space, Modal, message, InputNumber, Row, Col
+    Layout, Form, Input, Button, Table, Space, Modal,Popconfirm, InputNumber, Row, Col
 } from "antd";
+import { toast } from 'react-toastify';
 import {
     SearchOutlined, EditOutlined, DeleteOutlined
 } from "@ant-design/icons";
@@ -52,7 +53,7 @@ const InsuranceTypeManagement = () => {
             }
         } catch (err) {
             console.error(err);
-            message.error("Không thể tạo mã mới.");
+            toast.error(err.response.data.Message);
         }
     };
 
@@ -74,7 +75,7 @@ const InsuranceTypeManagement = () => {
             }
         } catch (err) {
             console.error(err);
-            message.error("Lỗi khi tải dữ liệu.");
+            toast.error(err.response.data.Message);
         } finally {
             setLoading(false);
         }
@@ -91,16 +92,15 @@ const InsuranceTypeManagement = () => {
             };
             const res = await createInsuranceType(payload);
             if (res.data?.Success) {
-                message.success("Thêm thành công!");
+                toast.success(res.data?.Message);
                 form.resetFields();
                 await loadData();
                 await generateNewCode();
             } else {
-                message.error(res.data?.Message || "Thêm thất bại.");
+                toast.error(res.data?.Message || "Thêm thất bại.");
             }
         } catch (err) {
-            console.error(err);
-            message.error("Lỗi khi thêm.");
+            toast.error(err.response.data.Message);
         } finally {
             setLoading(false);
         }
@@ -128,15 +128,14 @@ const InsuranceTypeManagement = () => {
             };
             const res = await updateInsuranceType(payload);
             if (res.data?.Success) {
-                message.success("Cập nhật thành công!");
+                toast.success(res.data?.Message);
                 setEditing(false);
                 await loadData();
             } else {
-                message.error(res.data?.Message || "Cập nhật thất bại.");
+                toast.error(res.data?.Message || "Cập nhật thất bại.");
             }
         } catch (err) {
-            console.error(err);
-            message.error("Lỗi khi cập nhật.");
+            toast.error(err.response.data.Message);
         }
     };
 
@@ -145,14 +144,13 @@ const InsuranceTypeManagement = () => {
         try {
             const res = await deleteInsuranceType(id);
             if (res.data?.Success) {
-                message.success("Xóa thành công!");
+                 toast.success(res.data?.Message);
                 await loadData();
             } else {
-                message.error(res.data?.Message || "Xóa thất bại.");
+                toast.error(res.data?.Message || "Xóa thất bại.");
             }
         } catch (err) {
-            console.error(err);
-            message.error("Lỗi khi xóa.");
+            toast.error(err.response.data.Message);
         } finally {
             setLoading(false);
         }
@@ -169,7 +167,14 @@ const InsuranceTypeManagement = () => {
             render: (_, record) => (
                 <Space>
                     <Button icon={<EditOutlined />} onClick={() => handleEdit(record)}>Sửa</Button>
-                    <Button danger icon={<DeleteOutlined />} onClick={() => handleDelete(record.id)}>Xóa</Button>
+                    <Popconfirm
+            title="Bạn có chắc muốn xóa?"
+            onConfirm={() => handleDelete(record.id)}
+            okText="Xóa"
+            cancelText="Hủy"
+          >
+            <Button icon={<DeleteOutlined />} danger />
+          </Popconfirm>
                 </Space>
             )
         }
@@ -216,7 +221,7 @@ const InsuranceTypeManagement = () => {
                     </Row>
                     <Row>
                         <Col span={24} style={{ textAlign: 'right' }}>
-                            <Button type="primary" htmlType="submit" loading={loading}>
+                            <Button type="primary" htmlType="submit">
                                 Thêm
                             </Button>
                         </Col>

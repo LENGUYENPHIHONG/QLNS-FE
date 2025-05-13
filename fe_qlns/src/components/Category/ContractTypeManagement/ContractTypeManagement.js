@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import {
-  Layout, Form, Input, Button, Table, Space, Modal, message
+  Layout, Form, Input, Button, Table, Space, Modal
 } from "antd";
 import {
   SearchOutlined, EditOutlined, DeleteOutlined
@@ -12,7 +12,7 @@ import {
   updateContractType,
   getNewContractTypeCode
 } from "../../../api/contractTypeApi";
-
+import { toast } from 'react-toastify';
 const { Content } = Layout;
 
 const ContractTypeManagement = () => {
@@ -62,7 +62,7 @@ const ContractTypeManagement = () => {
         setFilteredContractTypes([]);
       }
     } catch (err) {
-      message.error("Lỗi khi tải danh sách loại hợp đồng");
+      toast.error(err.response.data.Message);
     } finally {
       setLoading(false);
     }
@@ -74,8 +74,8 @@ const ContractTypeManagement = () => {
       if (res.data?.code) {
         form.setFieldsValue({ code: res.data.code });
       }
-    } catch {
-      message.error("Không thể lấy mã mới");
+    } catch(err) {
+      toast.error(err.response.data.Message);
     }
   };
 
@@ -88,15 +88,15 @@ const ContractTypeManagement = () => {
         THOIHAN: values.duration,
       });
       if (res.data?.Success) {
-        message.success("Thêm thành công");
+        toast.success(res.data?.Message);
         form.resetFields();
         await loadContractTypes();
         await generateNewCode();
       } else {
-        message.error(res.data?.Message || "Thêm thất bại");
+        toast.error(res.data?.Message || "Thêm thất bại.");
       }
-    } catch {
-      message.error("Lỗi khi thêm loại hợp đồng");
+    } catch(err) {
+      toast.error(err.response.data.Message);
     } finally {
       setLoading(false);
     }
@@ -106,15 +106,15 @@ const ContractTypeManagement = () => {
     try {
       const res = await deleteContractType(id);
       if (res.data?.Success) {
-        message.success("Đã xóa thành công");
+        toast.success(res.data?.Message);
         const newList = contractTypes.filter((item) => item.id !== id);
         setContractTypes(newList);
         setFilteredContractTypes(newList);
       } else {
-        message.error(res.data?.Message || "Xóa thất bại");
+        toast.error(res.data?.Message || "Xóa thất bại");
       }
     } catch {
-      message.error("Lỗi khi xóa");
+      toast.error("Lỗi khi xóa");
     }
   };
 
@@ -137,14 +137,14 @@ const ContractTypeManagement = () => {
         THOIHAN: values.duration,
       });
       if (res.data?.Success || res.data?.MA) {
-        message.success("Cập nhật thành công");
+        toast.success(res.data?.Success);
         setEditing(false);
         await loadContractTypes();
       } else {
-        message.error(res.data?.Message || "Cập nhật thất bại");
+        toast.error(res.data?.Message || "Cập nhật thất bại");
       }
     } catch {
-      message.error("Lỗi khi cập nhật");
+      toast.error("Lỗi khi cập nhật");
     }
   };
 

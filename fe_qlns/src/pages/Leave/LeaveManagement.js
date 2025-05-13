@@ -6,16 +6,16 @@ import {
   Input,
   Button,
   Select,
+  Popconfirm,
   Table,
   Space,
-  message,
   DatePicker,
 } from "antd";
 import {
   SearchOutlined,
   DeleteOutlined,
 } from "@ant-design/icons";
-import moment from "moment";
+import { toast } from 'react-toastify';
 import {
   getAllLeaveRequests,
   createLeaveRequest,
@@ -57,7 +57,7 @@ const LeaveRequestManagement = () => {
         setLeaveRequests(res.data.Data);
       }
     } catch {
-      message.error("Lỗi khi tải dữ liệu nghỉ phép");
+      toast.error("Lỗi khi tải dữ liệu nghỉ phép");
     } finally {
       setLoading(false);
     }
@@ -70,7 +70,7 @@ const LeaveRequestManagement = () => {
       if (empRes.data?.Success) setEmployees(empRes.data.Data);
       if (typeRes.data?.Success) setLeaveTypes(typeRes.data.Data);
     } catch {
-      message.error("Không thể tải danh sách nhân viên hoặc loại phép");
+      toast.error("Không thể tải danh sách nhân viên hoặc loại phép");
     }
   };
 
@@ -80,7 +80,7 @@ const LeaveRequestManagement = () => {
       const res = await getYearDetails(currentYear);
       if (res.data?.Success) setYearDetails(res.data.Data);
     } catch {
-      message.error("Không thể tải chi tiết năm");
+      toast.error("Không thể tải chi tiết năm");
     }
   };
 
@@ -92,7 +92,7 @@ const LeaveRequestManagement = () => {
         setStatusOptions(res.data.Data.TrangThai);
       }
     } catch {
-      message.error("Không thể tải bộ lọc nghỉ phép");
+      toast.error("Không thể tải bộ lọc nghỉ phép");
     }
   };
 
@@ -113,13 +113,13 @@ const LeaveRequestManagement = () => {
       const diffDays = end.diff(start, "day") + 1;
 
       if (start.isBefore(dayjs(), 'day')) {
-        message.error("Không thể tạo nghỉ phép trong quá khứ.");
+        toast.error("Không thể tạo nghỉ phép trong quá khứ.");
         setLoading(false);
         return;
       }
 
       if (end.isBefore(start, 'day')) {
-        message.error("Ngày kết thúc không hợp lệ.");
+        toast.error("Ngày kết thúc không hợp lệ.");
         setLoading(false);
         return;
       }
@@ -137,18 +137,18 @@ const LeaveRequestManagement = () => {
         ngaytao: new Date().toISOString(),
         ngaypheduyet: null
       };
+      console.log("Payload:", payload);
 
       const res = await createLeaveRequest(payload);
       if (res.data?.Success) {
-        message.success("Tạo yêu cầu nghỉ phép thành công");
+       toast.success(res.data?.Message);
         form.resetFields();
         fetchData();
       } else {
-        message.error(res.data?.Message || "Tạo thất bại");
+        toast.error(res.data?.Message || "Tạo thất bại");
       }
     } catch (err) {
-      console.error("❌ Lỗi tạo nghỉ phép:", err);
-      message.error("Lỗi khi tạo yêu cầu nghỉ phép");
+      toast.error("Lỗi khi tạo yêu cầu nghỉ phép");
     } finally {
       setLoading(false);
     }
@@ -159,13 +159,13 @@ const LeaveRequestManagement = () => {
     try {
       const res = await approveLeave(id);
       if (res.data?.Success) {
-        message.success("Phê duyệt thành công");
+        toast.success(res.data?.Message);
         fetchData();
       } else {
-        message.error(res.data?.Message);
+        toast.error(res.data?.Message);
       }
     } catch {
-      message.error("Lỗi khi phê duyệt");
+      toast.error("Lỗi khi phê duyệt");
     } finally {
       setLoading(false);
     }
@@ -176,13 +176,13 @@ const LeaveRequestManagement = () => {
     try {
       const res = await deleteLeaveRequest(id);
       if (res.data?.Success) {
-        message.success("Xóa thành công");
+        toast.success(res.data?.Message);
         fetchData();
       } else {
-        message.error(res.data?.Message);
+        toast.error(res.data?.Message);
       }
     } catch {
-      message.error("Lỗi khi xóa");
+      toast.error("Lỗi khi xóa");
     } finally {
       setLoading(false);
     }
@@ -206,9 +206,14 @@ const LeaveRequestManagement = () => {
               Phê duyệt
             </Button>
           )}
-          <Button danger icon={<DeleteOutlined />} onClick={() => handleDelete(record.Id)}>
-            Xóa
-          </Button>
+          <Popconfirm
+            title="Bạn có chắc muốn xóa?"
+            onConfirm={() => handleDelete(record.Id)}
+            okText="Xóa"
+            cancelText="Hủy"
+          >
+            <Button icon={<DeleteOutlined />} danger />
+          </Popconfirm>
         </Space>
       ),
     },
@@ -270,7 +275,7 @@ const LeaveRequestManagement = () => {
               <Input placeholder="Lý do nghỉ phép" />
             </Form.Item>
             <Form.Item>
-              <Button type="primary" htmlType="submit" loading={loading}>
+              <Button style={{top: 15}} type="primary" htmlType="submit" loading={loading}>
                 Gửi yêu cầu
               </Button>
             </Form.Item>

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import {
-  Layout, Form, Input, Button, Table, Space, Modal, message
+  Layout, Form, Input, Button, Table, Space, Modal, Popconfirm
 } from "antd";
 import {
   SearchOutlined, EditOutlined, DeleteOutlined
@@ -12,7 +12,7 @@ import {
   getNewCode,
   updatePosition
 } from "../../../api/positionApi";
-
+import { toast } from 'react-toastify';
 const { Content } = Layout;
 
 const PositionManagement = () => {
@@ -47,12 +47,11 @@ const PositionManagement = () => {
   const generateNewCode = async () => {
     try {
       const codeRes = await getNewCode();
-      console.log("📦 Mã mới:", codeRes.data?.code);
       if (codeRes.data?.code) {
         form.setFieldsValue({ positionCode: codeRes.data.code });
       }
     } catch (err) {
-      console.error("❌ Lỗi lấy mã chức vụ:", err);
+      toast.error(err.response.data.Message);
     }
   };
 
@@ -71,11 +70,10 @@ const PositionManagement = () => {
       } else {
         setPositions([]);
         setFilteredPositions([]);
-        message.warning("Không có dữ liệu.");
+        toast.warning("Không có dữ liệu.");
       }
     } catch (err) {
-      console.error("❌ Lỗi API:", err);
-      message.error("Lỗi khi tải danh sách.");
+      toast.error("Lỗi khi tải danh sách.");
     } finally {
       setLoading(false);
     }
@@ -90,15 +88,15 @@ const PositionManagement = () => {
       };
       const res = await createPosition(data);
       if (res.data?.Success) {
-        message.success("Thêm thành công!");
+        toast.success(res.data?.Message);
         form.resetFields();
         await loadPositions();
         await generateNewCode(); // Sinh mã mới sau khi thêm
       } else {
-        message.error(res.data?.Message || "Thêm thất bại.");
+        toast.error(res.data?.Message || "Thêm thất bại.");
       }
     } catch (err) {
-      message.error("Lỗi khi thêm chức vụ.");
+      toast.error(err.response.data.Message);
     } finally {
       setLoading(false);
     }
@@ -110,13 +108,13 @@ const PositionManagement = () => {
     try {
       const res = await deletePosition(id);
       if (res.data?.Success) {
-        message.success("Xóa thành công!");
+        toast.success(res.data?.Message);
       } else {
-        message.error(res.data?.Message || "Xóa thất bại.");
+        toast.error(res.data?.Message || "Xóa thất bại.");
         await loadPositions();
       }
     } catch (err) {
-      message.error("Lỗi khi xóa.");
+      toast.error("Lỗi khi xóa.");
       await loadPositions();
     }
   };
@@ -139,14 +137,14 @@ const PositionManagement = () => {
       };
       const res = await updatePosition(payload);
       if (res.data?.Success || res.data?.MA) {
-        message.success("Cập nhật thành công!");
+        toast.success(res.data?.Success);
         setEditing(false);
         await loadPositions();
       } else {
-        message.error(res.data?.Message || "Cập nhật thất bại.");
+        toast.error(res.data?.Message || "Cập nhật thất bại.");
       }
     } catch (err) {
-      message.error("Lỗi khi cập nhật.");
+      toast.error(err.response.data.Message);
     }
   };
 
@@ -169,13 +167,14 @@ const PositionManagement = () => {
           <Button icon={<EditOutlined />} onClick={() => handleEdit(record)}>
             Sửa
           </Button>
-          <Button
-            danger
-            icon={<DeleteOutlined />}
-            onClick={() => handleDelete(record.id)}
+          <Popconfirm
+            title="Bạn có chắc muốn xóa?"
+            onConfirm={() => handleDelete(record.id)}
+            okText="Xóa"
+            cancelText="Hủy"
           >
-            Xóa
-          </Button>
+            <Button icon={<DeleteOutlined />} danger />
+          </Popconfirm>
         </Space>
       ),
     },

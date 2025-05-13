@@ -8,9 +8,9 @@ import {
   Button,
   Table,
   Space,
-  message,
   Popconfirm,
 } from "antd";
+import { toast } from 'react-toastify';
 import { EditOutlined, DeleteOutlined } from "@ant-design/icons";
 import {
   getAutoCode,
@@ -36,7 +36,7 @@ const EmployeeTypeModal = ({
       const res = await getAutoCode();
       form.setFieldsValue({ employeeTypeCode: res.data.code });
     } catch (err) {
-      message.error("Không thể lấy mã loại nhân viên mới!");
+      toast.error("Không thể lấy mã loại nhân viên mới!");
     }
   };
 
@@ -45,12 +45,12 @@ const EmployeeTypeModal = ({
     setLoading(true);
     try {
       if (editingId) {
-        await updateEmployeeType({
+        var res = await updateEmployeeType({
           MALNV: values.employeeTypeCode,
           TENLNV: values.employeeTypeName,
           //NGAYPHEPCAP: values.leaveDays,
         });
-        message.success("Cập nhật thành công");
+        toast.success(res.data?.Message);
         setEmployeeTypes((prev) =>
           prev.map((type) =>
             type.employeeTypeCode === values.employeeTypeCode
@@ -63,12 +63,12 @@ const EmployeeTypeModal = ({
           )
         );
       } else {
-        await createEmployeeType({
+        var res = await createEmployeeType({
           MALNV: values.employeeTypeCode,
           TENLNV: values.employeeTypeName,
           //NGAYPHEPCAP: values.leaveDays,
         });
-        message.success("Thêm thành công");
+        toast.success(res.data?.Message);
         setEmployeeTypes((prev) => [
           ...prev,
           {
@@ -82,7 +82,7 @@ const EmployeeTypeModal = ({
       fetchAutoCode();
       setEditingId(null);
     } catch (err) {
-      message.error(err.response?.data?.Message || "Lỗi xử lý");
+      toast.error(err.response?.data?.Message || "Lỗi xử lý");
     } finally {
       setLoading(false);
     }
@@ -100,13 +100,13 @@ const EmployeeTypeModal = ({
   const handleDelete = async (record) => {
     setLoading(true);
     try {
-      await deleteEmployeeType({ MALNV: record.employeeTypeCode });
-      message.success("Xóa thành công");
+      var res = await deleteEmployeeType({ MALNV: record.employeeTypeCode });
+      toast.success(res.data?.Message);
       setEmployeeTypes((prev) =>
         prev.filter((type) => type.employeeTypeCode !== record.employeeTypeCode)
       );
     } catch (err) {
-      message.error(err.response?.data?.Message || "Lỗi xóa dữ liệu");
+      toast.error(err.response?.data?.Message || "Lỗi xóa dữ liệu");
     } finally {
       setLoading(false);
     }

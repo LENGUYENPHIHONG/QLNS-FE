@@ -99,3 +99,14 @@ export const cancelKhenThuong = async (maKhenThuong, data) => {
   );
   return response.data;
 };
+
+export const importKhenThuongFromExcel = async (formData) => {
+  const res = await axios.post(
+    `${BASE_URL}${KT_ENDPOINT}/ImportKhenThuong`, 
+    formData,
+    {
+      headers: { 'Content-Type': 'multipart/form-data' }
+    }
+  );
+  return res;
+};
