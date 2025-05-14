@@ -59,12 +59,9 @@ const AppLayout = ({ collapsed, toggleSidebar }) => {
     useEffect(() => {
         const checkAuth = async () => {
             try {
-                const res = await axios.get(
-                    `${process.env.REACT_APP_API_URL}/api/Auth/me`,
-                    {
-                        withCredentials: true,
-                    }
-                );
+                const res = await axios.get(`/api/Auth/me`, {
+                    withCredentials: true,
+                });
                 setAuthenticated(true);
                 setUserInfo(res.data);
 
