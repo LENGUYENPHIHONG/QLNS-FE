@@ -276,7 +276,7 @@ export default function EmployeeTrainingManagement() {
 
                 {/* Modal Upload PDF */}
                 <Modal
-                    title="Upload PDF hợp đồng"
+                    title="Upload PDF đào tạo"
                     visible={uploadModal}
                     onCancel={() => setUploadModal(false)}
                     onOk={handleUpload}
