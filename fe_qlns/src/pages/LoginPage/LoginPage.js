@@ -13,23 +13,20 @@ const LoginPage = () => {
     const onFinish = async (values) => {
         setLoading(true);
         try {
-            // Gọi API đăng nhập và cho phép gửi & nhận cookie
+            // 1) Gọi tương đối /api/... để Vercel proxy về backend HTTP
             await axios.post(
-                `http://ducthanh16013-001-site1.qtempurl.com/api/Auth/dang-nhap`,
+                "/api/Auth/dang-nhap",
                 values,
-                {
-                    withCredentials: true, // 🔥 Bắt buộc để nhận HttpOnly cookie
-                }
+                { withCredentials: true } // 🔥 để nhận HttpOnly cookie
             );
-            await axios.get(`${process.env.REACT_APP_API_URL}/api/Auth/me`, {
-                withCredentials: true,
-            });
 
-            toast("Đăng nhập thành công!");
-            //console.log("🔍 Kết quả đăng nhập:", res);
+            // 2) Lấy thông tin user
+            await axios.get("/api/Auth/me", { withCredentials: true });
+
+            toast.success("Đăng nhập thành công!");
             window.location.href = "/dashboard";
         } catch (err) {
-            toast("Tên đăng nhập hoặc mật khẩu không đúng!");
+            toast.error("Tên đăng nhập hoặc mật khẩu không đúng!");
         }
         setLoading(false);
     };
