@@ -11,7 +11,7 @@ export const getNewEmployeeCode = () => axios.get(`${API_URL}/api/NhanVien/MaNV`
 export const createEmployee = (data) => axios.post(`${API_URL}/api/NhanVien/TaoNV`, data);
 
 export const fetchEmployees = (page = 1, pageSize = 20) =>
-  axios.get(`${API_URL}/api/NhanVien/DanhSachNV`, {
+  axios.get(`/api/NhanVien/DanhSachNV`, {
     params: { page, pageSize },
   });
 
