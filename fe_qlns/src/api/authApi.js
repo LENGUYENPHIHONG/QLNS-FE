@@ -44,9 +44,8 @@ export const logout = () => {
 /**
  * Lấy danh sách tất cả tài khoản
  */
-export const getAccounts = () => {
-  return axios.get(`${API_URL}/api/Auth/danh-sach-tai-khoan`);
-};
+export const getAccounts = (isDeleted) =>
+  axios.get(`${API_URL}/api/Auth/danh-sach-tai-khoan`, { params: { isNhanVienDaXoa: isDeleted } });
 
 /**
  * Cập nhật tài khoản
