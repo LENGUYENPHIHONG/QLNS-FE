@@ -1,7 +1,8 @@
 import axios from 'axios';
 const API_URL = process.env.REACT_APP_API_URL
 
-export const getAllLeaveRequests = () => axios.get(`${API_URL}/api/ChiTietNghiPhep/DanhSachNP`);
+export const getAllLeaveRequests = (params = {}) =>
+  axios.get(`${API_URL}/api/ChiTietNghiPhep/DanhSachNP`, { params });
 export const createLeaveRequest = (data) => axios.post(`${API_URL}/api/ChiTietNghiPhep/TaoNP`, data);
 export const updateLeaveRequest = (id, data) => axios.put(`${API_URL}/api/ChiTietNghiPhep/CapNhatNP/${id}`, data);
 export const deleteLeaveRequest = (id) => axios.delete(`${API_URL}/api/ChiTietNghiPhep/XoaNP/${id}`);

@@ -131,23 +131,34 @@ export default function EmployeeTrainingManagement() {
     }
 
     async function handleUpload() {
-        if (!uploadFiles.length) return toast.warning("Chọn file PDF");
-        const fd = new FormData();
-        fd.append("MANV", currentRecord.MANV);
-        fd.append("MADT", currentRecord.MADT);
-        fd.append("AnhFile", uploadFiles[0].originFileObj);
-        setLoading(true);
-        try {
-            var res = await uploadTrainingFile(fd);
-            toast.success(res.data?.Message);
-            setUploadModal(false);
-            await loadData();
-        } catch {
-            toast.error("Upload thất bại");
-        } finally {
-            setLoading(false);
-        }
+    if (!uploadFiles.length) {
+        toast.warning("Chọn file PDF");
+        return;
     }
+
+    const file = uploadFiles[0].originFileObj;
+    if (file.type !== "application/pdf") {
+        toast.error("Chỉ hỗ trợ file PDF");
+        return;
+    }
+
+    const fd = new FormData();
+    fd.append("AnhFile", file);
+
+    setLoading(true);
+    try {
+       // Dùng đúng Id của record và chỉ truyền FormData có file
+       const res = await uploadTrainingFile(currentRecord.Id, fd);
+
+        toast.success(res.data?.Message);
+        setUploadModal(false);
+        await loadData();
+    } catch {
+        toast.error("Upload thất bại");
+    } finally {
+        setLoading(false);
+    }
+}
 
     const columns = [
         { title: "Mã CT", dataIndex: "Id", key: "Id" },

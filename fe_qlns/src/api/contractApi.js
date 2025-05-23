@@ -2,9 +2,18 @@ import axios from "axios";
 
 const API_URL = process.env.REACT_APP_API_URL
 // Lấy danh sách hợp đồng
-export const fetchContracts = (params = {}) => {
-  return axios.get(`${API_URL}/api/ChiTietHopDong/DanhSachHD`, { params });
-};
+export const fetchContracts = ({
+  page = 1,
+  pageSize = 10,
+  malhd,
+  manv,
+  search,
+  includeDeleted,
+  onlyDeleted
+} = {}) =>
+  axios.get(`${API_URL}/api/ChiTietHopDong/DanhSachHD`, {
+    params: { page, pageSize, malhd, manv, search, includeDeleted, onlyDeleted }
+  });
 
 // Tạo mới hợp đồng
 export const createContract = (data) => {
@@ -41,13 +50,13 @@ export const confirmEndContract = (id) => {
   return axios.post(`${API_URL}/api/ChiTietHopDong/XacNhanKetThucHD/${id}`);
 };
 
-// Upload PDF hợp đồng
-export const uploadContractFile = (formData) => {
-  return axios.post(`${API_URL}/api/ChiTietHopDong/UploadFile`, formData, {
-    headers: { 'Content-Type': 'multipart/form-data' }
-  });
+export const uploadContractFile = (id, formData) => {
+  return axios.post(
+    `${API_URL}/api/ChiTietHopDong/UploadFile/${id}`,
+    formData,
+    { headers: { 'Content-Type': 'multipart/form-data' } }
+  );
 };
-
 // Gia hạn hợp đồng
 export const renewContracts = (hopDongIds) => {
   return axios.post(`${API_URL}/api/ChiTietHopDong/GiaHanHD`, { HopDongIds: hopDongIds });

@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 // Base URL cho API
-const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5077';
+const API_URL = process.env.REACT_APP_API_URL ;
 
 /**
  * Lấy danh sách bằng cấp chi tiết

@@ -1,33 +1,38 @@
+// File: src/api/insuranceDetailApi.js
 import axios from "axios";
 
-const API_URL = process.env.REACT_APP_API_URL
+const API_URL = process.env.REACT_APP_API_URL;
 
-// GET all
-export const fetchInsurances = () =>
-  axios.get(`${API_URL}/api/ChiTietBaoHiem/DanhSachBH`);
-
-// GET single detail
-export const fetchInsuranceById = (id) =>
-  axios.get(`${API_URL}/api/ChiTietBaoHiem/DanhSachBH`, { params: { search: id } }); 
-// ↑ if you had a real ChiTietBH/{id} route, switch to that
+// GET with filters & paging
+export const fetchInsurances = ({
+  page = 1,
+  pageSize = 10,
+  maNhanVien,
+  maLoaiBaoHiem,
+  trangThai,
+  search
+} = {}) =>
+  axios.get(`${API_URL}/api/ChiTietBaoHiem/DanhSachBH`, {
+    params: { page, pageSize, maNhanVien, maLoaiBaoHiem, trangThai, search }
+  });
 
 // CREATE
-export const createInsurance = (data) =>
+export const createInsurance = data =>
   axios.post(`${API_URL}/api/ChiTietBaoHiem/TaoBH`, data);
 
-// UPDATE (approve or edit)
+// UPDATE
 export const updateInsurance = (id, data) =>
   axios.put(`${API_URL}/api/ChiTietBaoHiem/CapNhatBH/${id}`, data);
 
 // DELETE expired
-export const deleteInsurance = (id) =>
+export const deleteInsurance = id =>
   axios.delete(`${API_URL}/api/ChiTietBaoHiem/XoaBH/${id}`);
 
-// RENEW (Gia hạn)
-export const renewInsurances = (payload) =>
+// RENEW
+export const renewInsurances = payload =>
   axios.post(`${API_URL}/api/ChiTietBaoHiem/GiaHanBaoHiem`, payload);
 
-// SUPPORTING LOOKUPS
+// LOOKUPS
 export const getEmployees = () =>
   axios.get(`${API_URL}/api/NhanVien/DanhSachNV`);
 

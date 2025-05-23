@@ -85,7 +85,7 @@ const EmployeeAddModal = ({
     };
 
     delete fullPayload.status; // loại bỏ nếu tồn tại
-
+    console.log('Payload tạo nhân viên:', fullPayload);
     onFinish(fullPayload);
   };
 

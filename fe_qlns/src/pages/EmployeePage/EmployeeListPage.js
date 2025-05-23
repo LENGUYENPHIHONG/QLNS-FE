@@ -1,23 +1,38 @@
 // File: src/pages/EmployeePage/EmployeeListPage.js
 import React, { useEffect, useState } from "react";
 import {
-  Layout, Input, Button, Select, Table, Space, message, Form, Image
+  Layout,
+  Input,
+  Button,
+  Table,
+  Space,
+  Popconfirm,
+  Drawer,
+  Tabs,
+  Spin,
+  Dropdown,
+  Menu,
+  Form,
+  Image
 } from "antd";
 import {
-  SearchOutlined, PlusOutlined, EyeOutlined, EditOutlined, DeleteOutlined
+  SearchOutlined,
+  PlusOutlined,
+  EditOutlined,
+  DeleteOutlined
 } from "@ant-design/icons";
-import { Popconfirm } from "antd";
+import EmployeeContractsTab from "../Tab/EmployeeContractsTab";
+import EmployeeDetailTab from "../Tab/EmployeeDetailTab";
 import EmployeeAddModal from "./EmployeeAddModal";
 import EmployeeDetailModal from "./EmployeeDetailModal";
 import {
-  getNewEmployeeCode,
-  createEmployee,
   fetchEmployees,
   deleteEmployee,
-  getEmployeeDetail,
-  updateEmployee
+  createEmployee,
+  updateEmployee,
+  getEmployeeDetail
 } from "../../api/employeeApi";
-import { toast } from 'react-toastify';
+import { fetchContracts } from "../../api/contractApi";
 import {
   getDepartments,
   getPositions,
@@ -25,18 +40,19 @@ import {
   getSpecializations,
   getEmployeeTypes
 } from "../../api/dropdownApi";
+import { toast } from 'react-toastify';
 import dayjs from "dayjs";
 
 const { Content } = Layout;
+const { TabPane } = Tabs;
 
 const EmployeeListPage = () => {
   const [pagination, setPagination] = useState({ current: 1, pageSize: 20, total: 0 });
   const [employees, setEmployees] = useState([]);
   const [filteredEmployees, setFilteredEmployees] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
-  const [selectedEmployee, setSelectedEmployee] = useState(null);
+
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [editEmployee, setEditEmployee] = useState(null);
   const [form] = Form.useForm();
   const [fileList, setFileList] = useState([]);
@@ -48,149 +64,124 @@ const EmployeeListPage = () => {
   const [specializations, setSpecializations] = useState([]);
   const [employeeTypes, setEmployeeTypes] = useState([]);
 
+  // Drawer + Tabs
+  const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+  const [selectedEmpId, setSelectedEmpId] = useState(null);
+  const [activeTab, setActiveTab] = useState('contracts');
+  const [contracts, setContracts] = useState([]);
+  const [tabLoading, setTabLoading] = useState(false);
+
+  // Detail modal
+  const [selectedEmployeeDetail, setSelectedEmployeeDetail] = useState(null);
+  const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
+
   useEffect(() => {
-    loadInitialData();
+    loadEmployees();
     loadDropdowns();
   }, []);
 
-  const loadInitialData = async (page = 1, pageSize = 10) => {
+  const loadEmployees = async (page = 1, pageSize = pagination.pageSize) => {
     setLoading(true);
     try {
       const res = await fetchEmployees(page, pageSize);
       if (res.data?.Data) {
-        const data = res.data.Data.map((e) => ({
+        const data = res.data.Data.map(e => ({
           id: e.MANV,
           name: e.TENNV,
-          phone: e.SODIENTHOAI,
-          avatar: e.ANH ? `http://localhost:5077/${e.ANH}` : "",
+          avatar: e.ANH ? `${process.env.REACT_APP_API_URL}/${e.ANH}` : null,
           department: e.PhongBanStr,
           position: e.ChucVuStr,
-          joinDate: e.NGAYVAOLAM?.split("T")[0],
+          joinDate: e.NGAYVAOLAM?.split('T')[0],
           status: e.TRANGTHAI,
+          phone: e.SODIENTHOAI
         }));
         setEmployees(data);
         setFilteredEmployees(data);
-        setPagination({
-          current: page,
-          pageSize,
-          total: res.data.Total,
-        });
+        setPagination({ current: page, pageSize, total: res.data.Total });
       }
     } catch {
-      toast.error("Không thể tải danh sách nhân viên");
+      toast.error('Không thể tải danh sách nhân viên');
     } finally {
       setLoading(false);
     }
   };
 
-
   const loadDropdowns = async () => {
     try {
-      
       const [pb, cv, td, cm, lnv] = await Promise.all([
-        getDepartments(),
-        getPositions(),
-        getEducationLevels(),
-        getSpecializations(),
-        getEmployeeTypes()
+        getDepartments(), getPositions(), getEducationLevels(), getSpecializations(), getEmployeeTypes()
       ]);
       setDepartments(pb.data?.Data || []);
       setPositions(cv.data?.Data || []);
       setEducationLevels(td.data?.Data || []);
       setSpecializations(cm.data?.Data || []);
       setEmployeeTypes(lnv.data?.Data || []);
-      
-    } catch (error) {
-      toast.error("Lỗi khi tải dropdown");
+    } catch {
+      toast.error('Lỗi khi tải dropdown');
     }
-    
   };
 
-  const handleSearch = (e) => {
-    const value = e.target.value;
-    setSearchTerm(value);
-    const filtered = employees.filter(emp =>
-      emp.name.toLowerCase().includes(value.toLowerCase()) ||
-      emp.department?.toLowerCase().includes(value.toLowerCase())
+  const handleSearch = e => {
+    const term = e.target.value;
+    setSearchTerm(term);
+    setFilteredEmployees(
+      employees.filter(emp =>
+        emp.name.toLowerCase().includes(term.toLowerCase()) ||
+        emp.department.toLowerCase().includes(term.toLowerCase())
+      )
     );
-    setFilteredEmployees(filtered);
   };
 
-  const handleAddOrEditEmployee = async (values, isEditMode) => {
+  const handleAddOrEdit = async (values, isEdit) => {
     setLoading(true);
     try {
       const payload = {
-        MANV: values.id,
-        TENNV: values.name,
-        NGAYSINH: values.birthDate?.format("YYYY-MM-DD"),
-        GIOITINH: values.gender,
-        CCCD: values.cccd,
-        SODIENTHOAI: values.phone,
-        QUOCTICH: values.nationality,
-        DANTOC: values.ethnicity,
-        TONGIAO: values.religion,
-        HONNHAN: values.maritalStatus,
-        NOISINH: values.birthPlace,
-        DIACHI: values.address,
-        NGAYVAOLAM: values.joinDate?.format("YYYY-MM-DD"),
-        IMAGEBASE64: values.IMAGEBASE64 || "",
-        MAPB: [values.department],
-        MACV: [values.position],
-        MATD: values.education,
-        MACM: values.specialization,
-        MALNV: values.employeeType
-      };
-
-      let res;
-      if (isEditMode) {
-        res = await updateEmployee(payload.MANV, payload);
-      } else {
-        res = await createEmployee(payload);
-      }
-
+  MANV: values.id,
+  TENNV: values.name,
+  NGAYSINH: values.birthDate?.format('YYYY-MM-DD') || null,
+  GIOITINH: values.gender || null,
+  CCCD: values.cccd || null,
+  SODIENTHOAI: values.phone || null,
+  QUOCTICH: values.nationality || null,
+  DANTOC: values.ethnicity || null,
+  TONGIAO: values.religion || null,
+  HONNHAN: values.maritalStatus || null,
+  NOISINH: values.birthPlace || null,
+  DIACHI: values.address || null,
+  NGAYVAOLAM: values.joinDate?.format('YYYY-MM-DD') || null,
+  IMAGEBASE64: values.IMAGEBASE64 || "",
+  MAPB: values.department ? [values.department] : [],
+  MACV: values.position ? [values.position] : [],
+  MATD: values.education || null,
+  MACM: values.specialization || null,
+  MALNV: values.employeeType || null
+};
+      const res = isEdit ? await updateEmployee(values.id, payload) : await createEmployee(payload);
       if (res.data?.Success) {
-        toast.success(isEditMode ? "Cập nhật thành công" : "Thêm thành công");
-        setIsModalOpen(false);
+        toast.success(isEdit ? 'Cập nhật thành công' : 'Thêm thành công');
+        setIsAddModalOpen(false);
         form.resetFields();
-        setEditEmployee(null);
-        loadInitialData();
-      } else {
-        toast.error(res.data?.Message || "Lỗi xử lý dữ liệu");
-      }
+        loadEmployees();
+      } else toast.error(res.data?.Message);
     } catch {
-      toast.error("Lỗi gọi API nhân viên");
-    } finally {
-      setLoading(false);
-    }
+      toast.error('Lỗi sử dụng API');
+    } finally { setLoading(false); }
   };
 
-  const handleViewDetail = async (manv) => {
+  // Edit employee: load detail then open modal
+  const handleEdit = async (id) => {
+    setLoading(true);
     try {
-      const res = await getEmployeeDetail(manv);
-      if (res.data?.Success) {
-        setSelectedEmployee(res.data.Data);
-        setIsDetailModalOpen(true);
-      } else {
-        toast.error("Không lấy được chi tiết nhân viên");
-      }
-    } catch {
-      toast.error("Lỗi khi tải chi tiết nhân viên");
-    }
-  };
-
-  const handleEdit = async (manv) => {
-    try {
-      const res = await getEmployeeDetail(manv);
+      const res = await getEmployeeDetail(id);
       if (res.data?.Success) {
         const data = res.data.Data;
-  
         setEditEmployee({
           id: data.MANV,
           name: data.TENNV,
-          phone: data.SODIENTHOAI,
-          cccd: data.CCCD,
           birthDate: data.NGAYSINH,
           gender: data.GIOITINH,
+          cccd: data.CCCD,
+          phone: data.SODIENTHOAI,
           nationality: data.QUOCTICH,
           ethnicity: data.DANTOC,
           religion: data.TONGIAO,
@@ -198,136 +189,109 @@ const EmployeeListPage = () => {
           birthPlace: data.NOISINH,
           address: data.DIACHI,
           joinDate: data.NGAYVAOLAM,
-          department: data?.PhongBans?.[0]?.MAPB,
-          position: data?.ChucVus?.[0]?.MACV,
-          education: data?.TrinhDo?.MATD,
-          specialization: data?.ChuyenMon?.MACM,
-          employeeType: data?.LoaiNhanVien?.MALNV,
+          department: data.PhongBans?.[0]?.MAPB,
+          position: data.ChucVus?.[0]?.MACV,
+          education: data.TrinhDo?.MATD,
+          specialization: data.ChuyenMon?.MACM,
+          employeeType: data.LoaiNhanVien?.MALNV,
         });
-  
-        setIsModalOpen(true); // gọi sau khi set xong dữ liệu
+        form.setFieldsValue({
+          ...data,
+          birthDate: data.NGAYSINH ? dayjs(data.NGAYSINH) : null,
+          joinDate: data.NGAYVAOLAM ? dayjs(data.NGAYVAOLAM) : null
+        });
+        setIsAddModalOpen(true);
       }
     } catch {
-      toast.error("Không lấy được dữ liệu nhân viên");
+      toast.error('Lỗi khi lấy dữ liệu nhân viên');
+    } finally {
+      setLoading(false);
     }
   };
-  
-  
 
-  const handleDelete = async (manv) => {
+  const handleDelete = async id => {
     try {
-      const res = await deleteEmployee(manv);
+      const res = await deleteEmployee(id);
       if (res.data?.Success) {
-        toast.success(res.data?.Message);
-        loadInitialData();
-      } else {
-        toast.error(res.data?.Message || "Lỗi khi xóa");
-      }
+        toast.success(res.data.Message);
+        loadEmployees();
+      } else toast.error(res.data.Message);
     } catch {
-      toast.error("Lỗi khi xóa nhân viên");
+      toast.error('Lỗi khi xóa');
     }
   };
 
-  const handleFileChange = ({ fileList }) => setFileList(fileList);
+  // Utility action
+   const openUtilityDrawer = (id, key) => {
+    setSelectedEmpId(id);
+    setActiveTab(key);
+    setIsDrawerOpen(true);
+  };
+
+  const utilityMenu = record => (
+    <Menu onClick={({ key }) => openUtilityDrawer(record.id, key)}>
+      <Menu.Item key="detail">Chi tiết nhân viên</Menu.Item>
+      <Menu.Item key="contracts">Hợp đồng</Menu.Item>
+      <Menu.Item key="insurances">Bảo hiểm</Menu.Item>
+      <Menu.Item key="leaves" disabled>Nghỉ phép</Menu.Item>
+      <Menu.Item key="trainings" disabled>Đào tạo</Menu.Item>
+      <Menu.Item key="rewards" disabled>Khen thưởng & Kỷ luật</Menu.Item>
+    </Menu>
+  );
 
   const columns = [
-    { title: "Mã NV", dataIndex: "id", key: "id" },
+    { title: 'Mã NV', dataIndex: 'id', key: 'id' },
     {
-      title: "Ảnh",
-      dataIndex: "avatar",
-      key: "avatar",
-      render: (url) => url ? <Image src={url} width={50} height={50} /> : "Không có ảnh"
+      title: 'Tên nhân viên', dataIndex: 'name', key: 'name', render: (text, rec) => (
+        <Dropdown overlay={utilityMenu(rec)} trigger={['click']}>
+          <span style={{ cursor: 'pointer', color: '#1890ff' }}>{text}</span>
+        </Dropdown>
+      )
     },
-    { title: "Tên nhân viên", dataIndex: "name", key: "name" },
-    { title: "Phòng ban", dataIndex: "department", key: "department" },
-    { title: "Chức vụ", dataIndex: "position", key: "position" },
-    { title: "Ngày vào làm", dataIndex: "joinDate", key: "joinDate" },
+    { title: 'Phòng ban', dataIndex: 'department', key: 'department' },
+    { title: 'Ngày vào làm', dataIndex: 'joinDate', key: 'joinDate' },
     {
-      title: "Trạng thái", dataIndex: "status", key: "status",
-      render: (status) => {
-        let bgColor = "#d4edda";  // Mặc định: đang làm
-        let textColor = "#155724";
-    
-        if (status === "Chưa kí hợp đồng") {
-          bgColor = "#fff3cd";
-          textColor = "#ff9800";
-        } else if (status === "Đã nghỉ việc") {
-          bgColor = "#f8d7da";
-          textColor = "#dc3545";
-        }
-    
-        return (
-          <span style={{
-            backgroundColor: bgColor,
-            color: textColor,
-            padding: "2px 10px",
-            borderRadius: 20,
-            fontWeight: 500
-          }}>
-            {status}
-          </span>
-        );
+      title: 'Trạng thái', dataIndex: 'status', key: 'status', render: s => {
+        let bg = '#d4edda', c = '#155724';
+        if (s === 'Chưa kí hợp đồng') { bg = '#fff3cd'; c = '#ff9800'; }
+        if (s === 'Đã nghỉ việc') { bg = '#f8d7da'; c = '#dc3545'; }
+        return <span style={{ background: bg, color: c, padding: '2px 10px', borderRadius: 20 }}>{s}</span>;
       }
     },
     {
-      title: "Tùy chọn", key: "actions",
-      render: (_, record) => (
+      title: 'Tùy chọn', key: 'actions', render: (_, r) => (
         <Space>
-      <Button icon={<EyeOutlined />} onClick={() => handleViewDetail(record.id)} />
-      <Button icon={<EditOutlined />} onClick={() => handleEdit(record.id)} />
-      <Popconfirm
-        title="Bạn có chắc muốn xoá nhân viên này không?"
-        onConfirm={() => handleDelete(record.id)}
-        okText="Xóa"
-        cancelText="Hủy"
-        placement="topRight"
-      >
-        <Button icon={<DeleteOutlined />} danger />
-      </Popconfirm>
-    </Space>
+          <Button icon={<EditOutlined />} size='small' onClick={() => handleEdit(r.id)} />
+          <Popconfirm title='Bạn có chắc?' onConfirm={() => handleDelete(r.id)} okText='Xóa' cancelText='Hủy'>
+            <Button icon={<DeleteOutlined />} danger size='small' />
+          </Popconfirm>
+        </Space>
       )
     }
   ];
 
   return (
-    <Layout style={{ backgroundColor: "white" }}>
+    <Layout style={{ background: '#fff' }}>
       <Content style={{ padding: 20 }}>
         <Space style={{ marginBottom: 20 }}>
-          <Input
-            placeholder="Tìm kiếm..."
-            value={searchTerm}
-            onChange={handleSearch}
-            prefix={<SearchOutlined />}
-            style={{ width: 300 }}
-          />
-          <Button type="primary" icon={<PlusOutlined />} onClick={() => setIsModalOpen(true)}>
-            Thêm nhân viên
-          </Button>
+          <Input placeholder='Tìm kiếm...' prefix={<SearchOutlined />} value={searchTerm} onChange={handleSearch} style={{ width: 300 }} />
+          <Button type='primary' icon={<PlusOutlined />} onClick={() => setIsAddModalOpen(true)}>Thêm nhân viên</Button>
         </Space>
-
         <Table
           columns={columns}
           dataSource={filteredEmployees}
-          rowKey="id"
+          rowKey='id'
           loading={loading}
-          pagination={{
-            current: pagination.current,
-            pageSize: pagination.pageSize,
-            total: pagination.total,
-            onChange: (page, pageSize) => loadInitialData(page, pageSize),
-          }}
+          pagination={{ current: pagination.current, pageSize: pagination.pageSize, total: pagination.total, onChange: loadEmployees }}
         />
 
         <EmployeeAddModal
-          visible={isModalOpen}
-          onCancel={() => {
-            setIsModalOpen(false);
-            setEditEmployee(null);
-          }}
-          onFinish={(values) => handleAddOrEditEmployee(values, !!editEmployee)}
+          visible={isAddModalOpen}
+          onCancel={() => { setIsAddModalOpen(false); setEditEmployee(null); }}
+          onFinish={(vals) => handleAddOrEdit(vals, !!editEmployee)}
           form={form}
           fileList={fileList}
-          onFileChange={handleFileChange}
+          onFileChange={({ fileList }) => setFileList(fileList)}
           loading={loading}
           departments={departments}
           positions={positions}
@@ -338,11 +302,32 @@ const EmployeeListPage = () => {
           initialValues={editEmployee}
         />
 
+        <Drawer
+          title='Tiện ích nhân viên'
+          width={1200}
+          onClose={() => setIsDrawerOpen(false)}
+          zIndex={1001}
+          visible={isDrawerOpen}
+          bodyStyle={{ paddingBottom: 20 }}
+        >
+          <Tabs activeKey={activeTab} onChange={key => setActiveTab(key)}>
+            <TabPane tab="Chi tiết nhân viên" key="detail">
+              <EmployeeDetailTab employeeId={selectedEmpId} />
+            </TabPane>
+            <TabPane tab="Hợp đồng" key="contracts">
+              <EmployeeContractsTab employeeId={selectedEmpId} />
+            </TabPane>
+            <TabPane tab='Bảo hiểm' key='insurances'>Chưa hỗ trợ</TabPane>
+            <TabPane tab='Nghỉ phép' key='leaves'>Chưa hỗ trợ</TabPane>
+            <TabPane tab='Đào tạo' key='trainings'>Chưa hỗ trợ</TabPane>
+            <TabPane tab='Khen thưởng & Kỷ luật' key='rewards'>Chưa hỗ trợ</TabPane>
+          </Tabs>
+        </Drawer>
 
         <EmployeeDetailModal
           visible={isDetailModalOpen}
           onCancel={() => setIsDetailModalOpen(false)}
-          employee={selectedEmployee}
+          employee={selectedEmployeeDetail}
         />
       </Content>
     </Layout>

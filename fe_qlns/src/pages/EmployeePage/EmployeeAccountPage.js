@@ -143,7 +143,7 @@ const EmployeeAccountPage = () => {
   return (
     <Layout style={{ background: 'white', padding: 24 }}>
       <Content>
-        <h2>Quản lý tài khoản nhân viên</h2>
+        <h2 style={{padding: 10}}>Quản lý tài khoản nhân viên</h2>
 
         {/* Filter select */}
         <Select

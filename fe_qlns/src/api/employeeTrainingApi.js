@@ -24,10 +24,12 @@ export const deleteEmployeeTraining = (id) => {
 };
 
 // Upload file PDF đào tạo nhân viên
-export const uploadTrainingFile = (formData) => {
-  return axios.post(`${API_URL}/api/DaoTaoNhanVien/UploadFile`, formData, {
-    headers: { 'Content-Type': 'multipart/form-data' }
-  });
+export const uploadTrainingFile = (id, formData) => {
+  return axios.post(
+    `${API_URL}/api/DaoTaoNhanVien/UploadFile/${id}`,
+    formData,
+    { headers: { 'Content-Type': 'multipart/form-data' } }
+  );
 };
 
 // Lấy danh sách nhân viên để chọn

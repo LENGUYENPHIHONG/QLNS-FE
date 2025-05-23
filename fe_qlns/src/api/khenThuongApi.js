@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:5077';
+const BASE_URL = process.env.REACT_APP_API_URL ;
 
 /**
  * Lấy mã Khen Thưởng mới

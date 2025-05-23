@@ -1,3 +1,4 @@
+// File: src/pages/InsuranceManagement.jsx
 import React, { useState, useEffect } from "react";
 import {
   Layout, Form, Input, Button, Table, Space,
@@ -5,57 +6,83 @@ import {
 } from "antd";
 import {
   SearchOutlined, DeleteOutlined, PlusOutlined,
-  EditOutlined, ReloadOutlined
+  ReloadOutlined, EditOutlined
 } from "@ant-design/icons";
 import dayjs from "dayjs";
+import { toast } from "react-toastify";
 
 import {
-  fetchInsurances,
-  createInsurance,
-  updateInsurance,
-  deleteInsurance,
-  renewInsurances,
-  getEmployees,
-  getInsuranceTypes
+  fetchInsurances, createInsurance, updateInsurance,
+  deleteInsurance, renewInsurances,
+  getEmployees, getInsuranceTypes
 } from "../../api/insuranceDetailApi";
-import { toast } from 'react-toastify';
+
 const { Content } = Layout;
 const { Option } = Select;
 
 export default function InsuranceManagement() {
   const [form] = Form.useForm();
-  const [data, setData] = useState([]);
-  const [emps, setEmps] = useState([]);
-  const [types, setTypes] = useState([]);
+  const [insurances, setInsurances] = useState([]);
+  const [employees, setEmployees] = useState([]);
+  const [insuranceTypes, setInsuranceTypes] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [search, setSearch] = useState("");
+
+  // filters + paging state
+  const [filters, setFilters] = useState({
+    maNhanVien: undefined,
+    maLoaiBaoHiem: undefined,
+    trangThai: undefined,
+    search: undefined
+  });
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
+  const [total, setTotal] = useState(0);
+
+  // Modal state
   const [modalVisible, setModalVisible] = useState(false);
   const [editingId, setEditingId] = useState(null);
   const [selectedKeys, setSelectedKeys] = useState([]);
 
-  useEffect(() => { loadAll(); }, []);
+  // load lookups + initial data
+  useEffect(() => {
+    loadLookups();
+    loadData(1, pageSize);
+  }, []);
 
-  async function loadAll() {
+  const loadLookups = async () => {
+    try {
+      const [empRes, typeRes] = await Promise.all([
+        getEmployees(), getInsuranceTypes()
+      ]);
+      if (empRes.data?.Data) setEmployees(empRes.data.Data);
+      if (typeRes.data?.Data) setInsuranceTypes(typeRes.data.Data);
+    } catch {
+      toast.error("Lỗi tải dữ liệu phụ");
+    }
+  };
+
+  const loadData = async (p = 1, ps = 10) => {
     setLoading(true);
     try {
-      const [insRes, empRes, typeRes] = await Promise.all([
-        fetchInsurances(),
-        getEmployees(),
-        getInsuranceTypes()
-      ]);
-      console.log("🚀 loadAll:", insRes.data, empRes.data, typeRes.data);
-      if (insRes.data?.Success) setData(insRes.data.Data);
-      if (empRes.data?.Data)  setEmps(empRes.data.Data);
-      if (typeRes.data?.Data) setTypes(typeRes.data.Data);
-    } catch (err) {
-      //console.error("❌ loadAll:", err);
-      toast.error("Lỗi tải dữ liệu");
+      const res = await fetchInsurances({
+        page: p,
+        pageSize: ps,
+        ...filters
+      });
+      if (res.data?.Success) {
+        setInsurances(res.data.Data);
+        setTotal(res.data.Total);
+        setPage(res.data.Page);
+        setPageSize(res.data.PageSize);
+      }
+    } catch {
+      toast.error("Lỗi tải danh sách bảo hiểm");
     } finally {
       setLoading(false);
     }
-  }
+  };
 
-  function openModal(record = null) {
+  const openModal = record => {
     if (record) {
       setEditingId(record.Id);
       form.setFieldsValue({
@@ -69,153 +96,106 @@ export default function InsuranceManagement() {
       form.setFieldsValue({ CHUKY: "Tháng" });
     }
     setModalVisible(true);
-  }
+  };
 
-  async function onFinish(values) {
+  const handleSave = async values => {
     setLoading(true);
     try {
       if (editingId) {
         // cập nhật
-        const current = data.find(i => i.Id === editingId);
-        var res = await updateInsurance(editingId, {
+        const current = insurances.find(i => i.Id === editingId);
+        await updateInsurance(editingId, {
           MANV: values.MANV,
           MALBH: values.MALBH,
           CHUKY: values.CHUKY,
           TRANGTHAI: current.TRANGTHAI
         });
-        toast.success(res.data?.Message);
+        toast.success("Cập nhật thành công");
       } else {
         // tạo mới
-        var res = await createInsurance({
+        await createInsurance({
           MANV: values.MANV,
           MALBH: values.MALBH,
           CHUKY: values.CHUKY,
           TRANGTHAI: ""
         });
-        toast.success(res.data?.Message);
+        toast.success("Tạo mới thành công");
       }
       setModalVisible(false);
-      form.resetFields();
       setSelectedKeys([]);
-      await loadAll();
+      loadData(page, pageSize);
     } catch (err) {
-      //console.error("❌ onFinish:", err, err.response?.data);
-      toast.error(err.response?.data?.Message || err.message);
+      toast.error(err.response?.data?.Message || "Lỗi lưu dữ liệu");
     } finally {
       setLoading(false);
     }
-  }
+  };
 
-  async function onDelete(id) {
+  const handleDelete = async id => {
     setLoading(true);
     try {
-      var res = await deleteInsurance(id);
-      toast.success(res.data?.Message);
-      await loadAll();
-    } catch (err) {
-      //console.error("❌ onDelete:", err);
+      await deleteInsurance(id);
+      toast.success("Xóa thành công");
+      loadData(page, pageSize);
+    } catch {
       toast.error("Xóa thất bại");
     } finally {
       setLoading(false);
     }
-  }
+  };
 
-  async function onRenew() {
-    if (!selectedKeys.length) {
-      return toast.warning("Chọn ít nhất 1 để gia hạn");
-    }
+  const handleRenew = async () => {
+    if (!selectedKeys.length) return toast.warning("Chọn ít nhất 1 mục để gia hạn");
     setLoading(true);
     try {
-      var res = await renewInsurances({ BaoHiemIds: selectedKeys });
-      toast.success(res.data?.Message);
+      await renewInsurances({ BaoHiemIds: selectedKeys });
+      toast.success("Gia hạn thành công");
       setSelectedKeys([]);
-      await loadAll();
-    } catch (err) {
-      //console.error("❌ onRenew:", err);
+      loadData(page, pageSize);
+    } catch {
       toast.error("Gia hạn thất bại");
     } finally {
       setLoading(false);
     }
-  }
-
-  // async function onApprove(record) {
-  //   setLoading(true);
-  //   try {
-  //     const detail = (await fetchInsuranceById(record.Id)).data.Data;
-  //     await updateInsurance(record.Id, {
-  //       CHUKY: detail.CHUKY,
-  //       TRANGTHAI: "Đã đóng"
-  //     });
-  //     message.success("Phê duyệt thành công");
-  //     await loadAll();
-  //   } catch (err) {
-  //     console.error("❌ onApprove:", err);
-  //     message.error("Phê duyệt thất bại");
-  //   } finally {
-  //     setLoading(false);
-  //   }
-  // }
+  };
 
   const columns = [
-    {
-      title: "Mã bảo hiểm",
-      dataIndex: "Id",
-      key: "Id"
-    },
+    { title: "Mã BH", dataIndex: "Id", key: "Id" },
     { title: "Nhân viên", dataIndex: "TENNV", key: "TENNV" },
     { title: "Loại BH", dataIndex: "TENLBH", key: "TENLBH" },
     { title: "Chu kỳ", dataIndex: "CHUKY", key: "CHUKY" },
     {
-      title: "Bắt đầu",
-      dataIndex: "NGAYBATDAU",
-      key: "NGAYBATDAU",
-      render: d => (d ? dayjs(d).format("YYYY-MM-DD") : "—")
+      title: "Bắt đầu", dataIndex: "NGAYBATDAU", key: "NGAYBATDAU",
+      render: d => d ? dayjs(d).format("YYYY-MM-DD") : "—"
     },
     {
-      title: "Kết thúc",
-      dataIndex: "NGAYKETTHUC",
-      key: "NGAYKETTHUC",
-      render: d => (d ? dayjs(d).format("YYYY-MM-DD") : "—")
+      title: "Kết thúc", dataIndex: "NGAYKETTHUC", key: "NGAYKETTHUC",
+      render: d => d ? dayjs(d).format("YYYY-MM-DD") : "—"
     },
     {
-      title: "Trạng thái",
-      dataIndex: "TRANGTHAI",
-      key: "TRANGTHAI",
+      title: "Trạng thái", dataIndex: "TRANGTHAI", key: "TRANGTHAI",
       render: st => {
-        let color;
-        switch (st) {
-          case "Đang hiệu lực":
-            color = "green";
-            break;
-          case "Sắp hết hiệu lực":
-            color = "gold";
-            break;
-          case "Hết hiệu lực":
-            color = "red";
-            break;
-          default:
-            color = "default";
-        }
+        let color = "default";
+        if (st === "Đang hiệu lực") color = "green";
+        else if (st === "Sắp hết hiệu lực") color = "gold";
+        else if (st === "Hết hiệu lực") color = "red";
         return <Tag color={color}>{st}</Tag>;
       }
     },
     {
-      title: "Hành động",
-      key: "actions",
+      title: "Hành động", key: "actions",
       render: (_, r) => (
         <Space>
-          <Button icon={<EditOutlined />} onClick={() => openModal(r)}>
-            Sửa
-          </Button>
+          <Button icon={<EditOutlined />} onClick={() => openModal(r)}>Sửa</Button>
           {r.TRANGTHAI === "Hết hiệu lực" && (
             <Popconfirm
-            title="Bạn có chắc muốn xóa?"
-            onConfirm={() => onDelete(r.Id)}
-            okText="Xóa"
-            cancelText="Hủy"
-          >
-            <Button icon={<DeleteOutlined />} danger />
-          </Popconfirm>
+              title="Bạn có chắc muốn xóa?"
+              onConfirm={() => handleDelete(r.Id)}
+              okText="Xóa"
+              cancelText="Hủy"
+            >
+              <Button icon={<DeleteOutlined />} danger />
+            </Popconfirm>
           )}
         </Space>
       )
@@ -225,87 +205,118 @@ export default function InsuranceManagement() {
   return (
     <Layout style={{ background: "#fff" }}>
       <Content style={{ padding: 20 }}>
-        <Space style={{ marginBottom: 16 }}>
+        {/* Filters */}
+        <Space style={{ marginBottom: 16, flexWrap: "wrap" }}>
+          <Select
+            allowClear
+            placeholder="Nhân viên"
+            style={{ width: 180 }}
+            value={filters.maNhanVien}
+            onChange={val => setFilters(f => ({ ...f, maNhanVien: val }))}
+          >
+            {employees.map(e => (
+              <Option key={e.MANV} value={e.MANV}>{e.TENNV}</Option>
+            ))}
+          </Select>
+
+          <Select
+            allowClear
+            placeholder="Loại BH"
+            style={{ width: 180 }}
+            value={filters.maLoaiBaoHiem}
+            onChange={val => setFilters(f => ({ ...f, maLoaiBaoHiem: val }))}
+          >
+            {insuranceTypes.map(t => (
+              <Option key={t.MALBH} value={t.MALBH}>{t.TENLBH}</Option>
+            ))}
+          </Select>
+
+          <Select
+            allowClear
+            placeholder="Trạng thái"
+            style={{ width: 180 }}
+            value={filters.trangThai}
+            onChange={val => setFilters(f => ({ ...f, trangThai: val }))}
+          >
+            <Option value="Đang hiệu lực">Đang hiệu lực</Option>
+            <Option value="Sắp hết hiệu lực">Sắp hết hiệu lực</Option>
+            <Option value="Hết hiệu lực">Hết hiệu lực</Option>
+          </Select>
+
           <Input
             allowClear
-            placeholder="Tìm kiếm..."
+            placeholder="Tìm chung..."
             prefix={<SearchOutlined />}
             style={{ width: 240 }}
-            value={search}
-            onChange={e => setSearch(e.target.value)}
-            onPressEnter={loadAll}
+            value={filters.search}
+            onChange={e => setFilters(f => ({ ...f, search: e.target.value }))}
+            onPressEnter={() => loadData(1, pageSize)}
           />
-          <Button type="primary" icon={<PlusOutlined />} onClick={() => openModal()}>
+
+          <Button
+            type="primary"
+            icon={<SearchOutlined />}
+            onClick={() => loadData(1, pageSize)}
+          >
+            Lọc
+          </Button>
+
+          <Button
+            icon={<ReloadOutlined />}
+            onClick={() => {
+              setFilters({ maNhanVien: undefined, maLoaiBaoHiem: undefined, trangThai: undefined, search: undefined });
+              loadData(1, pageSize);
+            }}
+          >
+            Đặt lại
+          </Button>
+
+          <Button type="primary" icon={<PlusOutlined />} onClick={() => openModal(null)}>
             Tạo mới
           </Button>
-          <Button
-            disabled={!selectedKeys.length}
-            onClick={onRenew}
-            icon={<ReloadOutlined />}
-          >
+
+          <Button onClick={handleRenew} disabled={!selectedKeys.length} icon={<ReloadOutlined />}>
             Gia hạn
           </Button>
         </Space>
 
+        {/* Table */}
         <Table
-          rowSelection={{
-            selectedRowKeys: selectedKeys,
-            onChange: setSelectedKeys
-          }}
+          rowSelection={{ selectedRowKeys: selectedKeys, onChange: setSelectedKeys }}
           columns={columns}
-          dataSource={data.filter(i =>
-            JSON.stringify(i).toLowerCase().includes(search.toLowerCase())
-          )}
+          dataSource={insurances}
           rowKey="Id"
           loading={loading}
-          pagination={{ pageSize: 10 }}
+          pagination={{
+            current: page,
+            pageSize,
+            total,
+            showSizeChanger: true,
+            onChange: (p, ps) => loadData(p, ps)
+          }}
         />
 
+        {/* Modal Create/Edit */}
         <Modal
           title={editingId ? "Cập nhật bảo hiểm" : "Tạo bảo hiểm mới"}
           visible={modalVisible}
           onCancel={() => setModalVisible(false)}
           footer={null}
         >
-          <Form
-            form={form}
-            layout="vertical"
-            onFinish={onFinish}
-            initialValues={{ CHUKY: "Tháng" }}
-          >
-            <Form.Item
-              name="MANV"
-              label="Nhân viên"
-              rules={[{ required: true, message: "Chọn nhân viên" }]}
-            >
+          <Form form={form} layout="vertical" onFinish={handleSave} initialValues={{ CHUKY: "Tháng" }}>
+            <Form.Item name="MANV" label="Nhân viên" rules={[{ required: true, message: "Chọn nhân viên" }]}>
               <Select placeholder="Chọn nhân viên">
-                {emps.map(e => (
-                  <Option key={e.MANV} value={e.MANV}>
-                    {e.TENNV}
-                  </Option>
-                ))}
+                {employees.map(e => <Option key={e.MANV} value={e.MANV}>{e.TENNV}</Option>)}
               </Select>
             </Form.Item>
 
-            <Form.Item
-              name="MALBH"
-              label="Loại bảo hiểm"
-              rules={[{ required: true, message: "Chọn loại bảo hiểm" }]}
-            >
+            <Form.Item name="MALBH" label="Loại bảo hiểm" rules={[{ required: true, message: "Chọn loại bảo hiểm" }]}>
               <Select placeholder="Chọn loại bảo hiểm">
-                {types.map(t => (
-                  <Option key={t.MALBH} value={t.MALBH}>
-                    {t.TENLBH}
-                  </Option>
-                ))}
+                {insuranceTypes.map(t => <Option key={t.MALBH} value={t.MALBH}>{t.TENLBH}</Option>)}
               </Select>
             </Form.Item>
 
-            <Form.Item
-              name="CHUKY"
-              label="Chu kỳ"
-              rules={[{ required: true, message: "Chọn chu kỳ" }]}
-            >
+            <Form.Item name="CHUKY" label="Chu kỳ" rules={[{ required: true, message: "Chọn chu kỳ" }]}>
               <Select>
                 <Option value="Tháng">Tháng</Option>
                 <Option value="Quý">Quý</Option>
