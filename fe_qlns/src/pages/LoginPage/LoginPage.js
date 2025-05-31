@@ -15,13 +15,13 @@ const LoginPage = () => {
         try {
             // 1) Gọi tương đối /api/... để Vercel proxy về backend HTTP
             await axios.post(
-                `${process.env.REACT_APP_API_URL}/api/Auth/dang-nhap`,
+                `/api/Auth/dang-nhap`,
                 values,
                 { withCredentials: true } // 🔥 để nhận HttpOnly cookie
             );
 
             // 2) Lấy thông tin user
-            await axios.get(`${process.env.REACT_APP_API_URL}/api/Auth/me`, { withCredentials: true });
+            await axios.get(`/api/Auth/me`, { withCredentials: true });
 
             toast.success("Đăng nhập thành công!");
             window.location.href = "/dashboard";

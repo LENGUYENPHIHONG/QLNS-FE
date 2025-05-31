@@ -32,7 +32,7 @@ export default function HeaderComponent({ collapsed, userInfo }) {
     if (key === "2") {
       try {
         await axios.post(
-          `${process.env.REACT_APP_API_URL}/api/Auth/dang-xuat`,
+          `/api/Auth/dang-xuat`,
           null,
           { withCredentials: true }
         );
