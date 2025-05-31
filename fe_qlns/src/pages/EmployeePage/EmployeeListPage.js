@@ -108,13 +108,14 @@ const [showDeleted, setShowDeleted] = useState(false);
         const data = res.data.Data.map(e => ({
           id: e.MANV,
           name: e.TENNV,
-          avatar: e.ANH ? `${process.env.REACT_APP_API_URL}/${e.ANH}` : null,
+          avatar: e.ANH ? `http://ducthanh16013-001-site1.qtempurl.com//${e.ANH}` : null,
           department: e.PhongBanStr,
           position: e.ChucVuStr,
           joinDate: e.NGAYVAOLAM?.split('T')[0],
           status: e.TRANGTHAI,
           phone: e.SODIENTHOAI
         }));
+        
         setEmployees(data);
         setFilteredEmployees(data);
         setPagination({ current: page, pageSize, total: res.data.Total });
