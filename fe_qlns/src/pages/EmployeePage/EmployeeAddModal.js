@@ -129,7 +129,27 @@ const EmployeeAddModal = ({
               <Button icon={<UploadOutlined />}>Chọn tệp</Button>
             </Upload>
           </Form.Item>
-          <Form.Item name="birthDate" label="Ngày sinh">
+           {/* >>> PHẦN XỬ LÝ NGÀY SINH (phải đủ 18 tuổi) */}
+          <Form.Item
+            name="birthDate"
+            label="Ngày sinh"
+            rules={[
+              { required: true, message: 'Vui lòng chọn ngày sinh' },
+              // Custom validator: tính tuổi >= 18
+              ({ getFieldValue }) => ({
+                validator(_, value) {
+                  if (!value) {
+                    return Promise.resolve();
+                  }
+                  const age = dayjs().diff(value, 'year');
+                  if (age >= 18) {
+                    return Promise.resolve();
+                  }
+                  return Promise.reject(new Error('Phải đủ 18 tuổi trở lên'));
+                },
+              }),
+            ]}
+          >
             <DatePicker style={{ width: "100%" }} format="YYYY-MM-DD" />
           </Form.Item>
 
@@ -140,24 +160,49 @@ const EmployeeAddModal = ({
             </Select>
           </Form.Item>
 
-          <Form.Item name="cccd" label="CCCD">
-            <Input />
+          <Form.Item
+            name="cccd"
+            label="CCCD"
+            rules={[
+              { required: true, message: 'Vui lòng nhập CCCD' },
+              { pattern: /^\d{12}$/, message: 'CCCD phải gồm đúng 12 chữ số' },
+            ]}
+          >
+            <Input placeholder="12 chữ số" maxLength={12} />
           </Form.Item>
 
-          <Form.Item name="phone" label="Số điện thoại">
-            <Input />
+          <Form.Item
+            name="phone"
+            label="Số điện thoại"
+            rules={[
+              { required: true, message: 'Vui lòng nhập số điện thoại' },
+              { pattern: /^\d{10}$/, message: 'Số điện thoại phải gồm 10 chữ số' },
+            ]}
+          >
+            <Input placeholder="0987654321" maxLength={10} />
           </Form.Item>
 
           <Form.Item name="nationality" label="Quốc tịch">
-            <Input />
+            <Select placeholder="Quốc tịch">
+              <Option value="Việt Nam">Việt Nam</Option>
+              <Option value="Khác">Khác</Option>
+            </Select>
           </Form.Item>
 
           <Form.Item name="ethnicity" label="Dân tộc">
-            <Input />
+            <Select placeholder="Dân tộc">
+              <Option value="Kinh">Kinh</Option>
+              <Option value="Khác">Khác</Option>
+            </Select>
           </Form.Item>
 
           <Form.Item name="religion" label="Tôn giáo">
-            <Input />
+            <Select placeholder="Tôn giáo">
+              <Option value="Phật giáo">Phật giáo</Option>
+              <Option value="Thiên chúa giáo">Thiên chúa giáo</Option>
+              <Option value="Hồi giáo">Hồi giáo</Option>
+              <Option value="Khác">Khác</Option>
+            </Select>
           </Form.Item>
 
           <Form.Item name="maritalStatus" label="Hôn nhân">

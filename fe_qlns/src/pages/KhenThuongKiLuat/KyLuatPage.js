@@ -121,22 +121,27 @@ export default function KyLuatPage() {
     }
   };
 
-  const handleImport = async file => {
-    const fd = new FormData(); fd.append('file', file);
-    toast.info('Đang import...');
-    try {
-      const res = await importKyLuatFromExcel(fd);
-      const { Message, Loi } = res.data;
-      toast.success(Message || 'Import thành công');
-      if (Array.isArray(Loi) && Loi.length)
-        Loi.forEach(l => toast.warn(l));
-      loadData();
-    } catch (err) {
-      const resp = err.response?.data;
-      toast.error(resp?.Detail || resp?.Message || 'Import thất bại');
+  const handleImport = async (file) => {
+  const fd = new FormData();
+  fd.append('file', file);
+  toast.info('Đang import...');
+  try {
+    // importKyLuatFromExcel trả về trực tiếp `res.data`
+    const res = await importKyLuatFromExcel(fd);
+    const { Message, Loi } = res;   // <-- chính xác
+    toast.success(Message || 'Import thành công');
+    if (Array.isArray(Loi) && Loi.length > 0) {
+      Loi.forEach(l => toast.warn(l));
     }
-    return false;
-  };
+    // Sau khi import thành công, gọi loadData() để refresh ngay
+    loadData();
+  } catch (err) {
+    const resp = err.response?.data;
+    const errMsg = resp?.Detail || resp?.Message || 'Import thất bại';
+    toast.error(errMsg);
+  }
+  return false;
+};
 
   const handleAction = async (action, rec) => {
     try {

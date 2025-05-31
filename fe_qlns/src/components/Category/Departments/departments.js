@@ -1,272 +1,313 @@
-  import React, { useState } from "react";
-  import {
-    Layout,
-    Form,
-    Input,
-    Button,
-    Select,
-    Table,
-    Space,
-    message,
-    DatePicker,
-  } from "antd";
-  import {
-    SearchOutlined,
-    PlusOutlined,
-    EditOutlined,
-    DeleteOutlined
-  } from "@ant-design/icons";
-  import DepartmentModal from "./DepartmentModal"; // 👈 Import modal tách riêng
+// src/pages/DepartmentManagement.js
+import React, { useEffect, useState } from "react";
+import {
+  Layout,
+  Form,
+  Input,
+  Button,
+  Table,
+  Space,
+  Modal,
+  Popconfirm,
+} from "antd";
+import {
+  SearchOutlined,
+  EditOutlined,
+  DeleteOutlined,
+} from "@ant-design/icons";
+import {
+  getNewDepartmentCode,
+  fetchDepartments,
+  createDepartment,
+  updateDepartment,
+  deleteDepartment,
+} from "../../../api/departmentModalApi"; // API phải có đúng 5 hàm này
+import { toast } from "react-toastify";
 
-  const { Content } = Layout;
-  const { Option } = Select;
+const { Content } = Layout;
 
-  const DepartmentManagement = () => {
-    const [form] = Form.useForm();
-    const [searchTerm, setSearchTerm] = useState("");
-    const [filter, setFilter] = useState("");
-    const [departments, setDepartments] = useState([]); // Danh sách phòng ban
-    const [loading, setLoading] = useState(false);
-    const [modalVisible, setModalVisible] = useState(false);
+const DepartmentManagement = () => {
+  const [addForm] = Form.useForm();
+  const [editForm] = Form.useForm();
 
-    const handleAddDepartment = (values) => {
-      setLoading(true);
-      setTimeout(() => {
-        const newDepartment = {
-          id: Date.now(),
-          employeeName: values.employeeName,
-          departmentName: values.departmentName,
-          position: values.position,
-          startDate: values.startDate ? values.startDate.format("YYYY-MM-DD") : null,
-        };
-        setDepartments([...departments, newDepartment]);
-        message.success("Thêm phòng ban thành công!");
-        form.resetFields();
-        setLoading(false);
-      }, 1000);
-    };
+  const [departments, setDepartments] = useState([]);
+  const [filtered, setFiltered] = useState([]);
+  const [searchTerm, setSearchTerm] = useState("");
 
-    const handleSearch = () => {
-      const filtered = departments.filter(
-        (dept) =>
-          dept.employeeName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          dept.departmentName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          dept.position.toLowerCase().includes(searchTerm.toLowerCase())
-      );
-      setDepartments(filtered);
-      console.log("Tìm kiếm với:", searchTerm);
-    };
+  const [loading, setLoading] = useState(false);
+  const [editing, setEditing] = useState(false);
+  const [editingItem, setEditingItem] = useState(null);
 
-    const handleFilter = (value) => {
-      setFilter(value);
-      if (value) {
-        const filtered = departments.filter((dept) => dept.departmentName === value);
-        setDepartments(filtered);
-      } else {
-        setDepartments(departments);
-      }
-      console.log("Lọc với:", value);
-    };
+  // 1. Load dữ liệu & sinh mã mới khi mount
+  useEffect(() => {
+    loadDepartments();
+    genNewCode();
+  }, []);
 
-    const handleDelete = (id) => {
-      setLoading(true);
-      setTimeout(() => {
-        setDepartments(departments.filter((dept) => dept.id !== id));
-        message.success("Xóa phòng ban thành công!");
-        setLoading(false);
-      }, 1000);
-    };
-
-    const handleEdit = (id) => {
-      console.log("Chỉnh sửa phòng ban:", id);
-    };
-
-    const columns = [
-      {
-        title: "Tên nhân viên",
-        dataIndex: "employeeName",
-        key: "employeeName",
-      },
-      {
-        title: "Phòng ban",
-        dataIndex: "departmentName",
-        key: "departmentName",
-      },
-      {
-        title: "Chức vụ",
-        dataIndex: "position",
-        key: "position",
-      },
-      {
-        title: "Ngày bắt đầu",
-        dataIndex: "startDate",
-        key: "startDate",
-      },
-      {
-        title: "Tùy chọn",
-        key: "action",
-        render: (_, record) => (
-          <Space size="middle">
-            <Button
-              type="primary"
-              style={{ backgroundColor: "#ffc107", borderColor: "#ffc107" }}
-              icon={<EditOutlined />}
-              onClick={() => handleEdit(record.id)}
-            >
-              Sửa
-            </Button>
-            <Button
-              type="primary"
-              danger
-              icon={<DeleteOutlined />}
-              onClick={() => handleDelete(record.id)}
-            >
-              Xóa
-            </Button>
-          </Space>
-        ),
-      },
-    ];
-
-    return (
-      <Layout style={{ backgroundColor: "white", margin: "0px", borderRadius: "8px" }}>
-        <Content style={{ padding: "20px" }}>
-          <Form
-            form={form}
-            layout="vertical"
-            onFinish={handleAddDepartment}
-            style={{
-              backgroundColor: "#fff",
-              padding: "20px",
-              borderRadius: "8px",
-              boxShadow: "0 2px 10px rgba(0, 0, 0, 0.1)",
-              marginBottom: "10px",
-            }}
-          >
-            <div style={{ display: "flex", gap: "16px", alignItems: "flex-end" }}>
-              <Form.Item
-                name="employeeName"
-                label="Tên nhân viên"
-                rules={[{ required: true, message: "Vui lòng nhập tên nhân viên!" }]}
-                style={{ flex: 1 }}
-              >
-                <Input placeholder="Tên nhân viên" />
-              </Form.Item>
-              <Form.Item
-                name="departmentName"
-                label={
-                  <span>
-                    Phòng ban {" "}
-                    <Button
-                      type="link"
-                      icon={<PlusOutlined />}
-                      onClick={() => setModalVisible(true)}
-                      style={{ padding: 0, marginLeft: -5 }}
-                    />
-                  </span>
-                }
-                rules={[{ required: true, message: "Vui lòng chọn phòng ban!" }]}
-                style={{ flex: 1 }}
-              >
-                <Select placeholder="Chọn phòng ban">
-                  {departments.map((dept) => (
-                    <Option key={dept.id} value={dept.departmentName}>
-                      {dept.departmentName}
-                    </Option>
-                  ))}
-                </Select>
-              </Form.Item>
-            </div>
-
-            <div style={{ display: "flex", gap: "16px", alignItems: "flex-end" }}>
-              <Form.Item
-                name="position"
-                label="Chức vụ"
-                rules={[{ required: true, message: "Vui lòng nhập chức vụ!" }]}
-                style={{ flex: 1 }}
-              >
-                <Input placeholder="Chức vụ" />
-              </Form.Item>
-              <Form.Item
-                name="startDate"
-                label="Ngày bắt đầu"
-                rules={[{ required: true, message: "Vui lòng chọn ngày bắt đầu!" }]}
-                style={{ flex: 1 }}
-              >
-                <DatePicker
-                  placeholder="Chọn ngày bắt đầu"
-                  style={{ width: "100%" }}
-                  format="YYYY-MM-DD"
-                />
-              </Form.Item>
-            </div>
-
-            <div style={{ display: "flex", justifyContent: "flex-end", marginTop: "-5px" }}>
-              <Form.Item>
-                <Button
-                  type="primary"
-                  htmlType="submit"
-                  style={{ backgroundColor: "#3e0fe6", borderColor: "#3e0fe6" }}
-                  loading={loading}
-                >
-                  Thêm
-                </Button>
-              </Form.Item>
-            </div>
-          </Form>
-
-          <Space style={{ marginBottom: "20px", display: "flex", alignItems: "center" }}>
-            <Input
-              placeholder="Tìm kiếm..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              prefix={<SearchOutlined style={{ color: "#007bff" }} />}
-              style={{ width: "300px" }}
-              onPressEnter={handleSearch}
-            />
-            <Select
-              placeholder="Lọc theo phòng ban"
-              value={filter}
-              onChange={handleFilter}
-              style={{ width: "150px" }}
-            >
-              <Option value="">Tất cả</Option>
-              {[...new Set(departments.map((dept) => dept.departmentName))].map((deptName) => (
-                <Option key={deptName} value={deptName}>
-                  {deptName}
-                </Option>
-              ))}
-            </Select>
-          </Space>
-
-          <Table
-            columns={columns}
-            dataSource={departments}
-            rowKey="id"
-            loading={loading}
-            locale={{ emptyText: <span style={{ color: "#dc3545" }}>Không có dữ liệu</span> }}
-            pagination={false}
-            style={{
-              backgroundColor: "#fff",
-              borderRadius: "4px",
-              boxShadow: "0 2px 10px rgba(0, 0, 0, 0.1)",
-            }}
-            scroll={{ x: true }}
-          />
-
-        
-              <DepartmentModal
-              visible={modalVisible}
-              onCancel={() => setModalVisible(false)}
-              departments={departments}
-              setDepartments={setDepartments}
-              loading={loading}
-              setLoading={setLoading}
-            />
-          
-        </Content>
-      </Layout>
+  // 2. Khi searchTerm hoặc departments thay đổi thì filter lại bảng
+  useEffect(() => {
+    if (!searchTerm) {
+      setFiltered(departments);
+      return;
+    }
+    const lower = searchTerm.toLowerCase();
+    setFiltered(
+      departments.filter(
+        (d) =>
+          d.MAPB.toLowerCase().includes(lower) ||
+          d.TENPB.toLowerCase().includes(lower)
+      )
     );
+  }, [searchTerm, departments]);
+
+  // Hàm lấy mã mới
+  const genNewCode = async () => {
+    try {
+      const res = await getNewDepartmentCode();
+      if (res.data?.code) {
+        addForm.setFieldsValue({ departmentCode: res.data.code });
+      }
+    } catch {
+      toast.error("Không thể lấy mã phòng ban mới");
+    }
   };
 
-  export default DepartmentManagement;
+  // Hàm load toàn bộ phòng ban
+  const loadDepartments = async () => {
+    setLoading(true);
+    try {
+      const res = await fetchDepartments();
+      // Giả sử API trả về res.data.Data = [ { MAPB, TENPB }, ... ]
+      if (Array.isArray(res.data.Data)) {
+        setDepartments(res.data.Data);
+        setFiltered(res.data.Data);
+      } else {
+        setDepartments([]);
+        setFiltered([]);
+        toast.warning("Không có dữ liệu phòng ban.");
+      }
+    } catch (err) {
+      toast.error("Lỗi khi tải danh sách phòng ban.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Thêm mới phòng ban
+  const handleAdd = async (values) => {
+    setLoading(true);
+    try {
+      const payload = {
+        MAPB: values.departmentCode,
+        TENPB: values.departmentName,
+      };
+      const res = await createDepartment(payload);
+      if (res.data?.Success) {
+        toast.success(res.data.Message);
+        addForm.resetFields();
+        await loadDepartments();
+        await genNewCode();
+      } else {
+        toast.error(res.data.Message || "Thêm thất bại");
+      }
+    } catch (err) {
+      toast.error(err.response?.data?.Message || "Lỗi thêm phòng ban.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Bắt đầu chỉnh sửa
+  const onEdit = (record) => {
+    setEditing(true);
+    setEditingItem(record);
+    editForm.setFieldsValue({
+      departmentCode: record.MAPB,
+      departmentName: record.TENPB,
+    });
+  };
+
+  // Cập nhật phòng ban
+  const handleUpdate = async () => {
+    setLoading(true);
+    try {
+      const vals = await editForm.validateFields();
+      const payload = {
+        MAPB: editingItem.MAPB,
+        TENPB: vals.departmentName,
+      };
+      const res = await updateDepartment(payload);
+      if (res.data?.Success) {
+        toast.success(res.data.Message);
+        setEditing(false);
+        setEditingItem(null);
+        await loadDepartments();
+      } else {
+        toast.error(res.data.Message || "Cập nhật thất bại");
+      }
+    } catch (err) {
+      toast.error("Lỗi khi cập nhật phòng ban.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Xoá phòng ban
+  const handleDelete = async (record) => {
+    setLoading(true);
+    try {
+      const res = await deleteDepartment({ MAPB: record.MAPB });
+      if (res.data?.Success) {
+        toast.success(res.data.Message);
+        await loadDepartments();
+      } else {
+        toast.error(res.data.Message || "Xóa thất bại");
+      }
+    } catch (err) {
+      toast.error(err.response?.data?.Message || "Lỗi khi xóa phòng ban.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Cấu hình cột cho Table
+  const columns = [
+    {
+      title: "Mã phòng ban",
+      dataIndex: "MAPB",
+      key: "MAPB",
+    },
+    {
+      title: "Tên phòng ban",
+      dataIndex: "TENPB",
+      key: "TENPB",
+    },
+    {
+      title: "Tùy chọn",
+      key: "action",
+      render: (_, record) => (
+        <Space>
+          <Button
+            icon={<EditOutlined />}
+            onClick={() => onEdit(record)}
+          >
+            Sửa
+          </Button>
+          <Popconfirm
+            title="Bạn có chắc muốn xóa?"
+            onConfirm={() => handleDelete(record)}
+            okText="Xóa"
+            cancelText="Hủy"
+          >
+            <Button icon={<DeleteOutlined />} danger />
+          </Popconfirm>
+        </Space>
+      ),
+    },
+  ];
+
+  return (
+    <Layout style={{ backgroundColor: "white", borderRadius: 8 }}>
+      <Content style={{ padding: 20 }}>
+        {/* === Form thêm mới === */}
+        <Form
+          form={addForm}
+          layout="vertical"
+          onFinish={handleAdd}
+          style={{
+            background: "#fff",
+            padding: 20,
+            borderRadius: 8,
+            boxShadow: "0 2px 10px rgba(0,0,0,0.1)",
+            marginBottom: 20,
+          }}
+        >
+          <div style={{ display: "flex", gap: 16 }}>
+            <Form.Item
+              name="departmentCode"
+              label="Mã phòng ban"
+              rules={[
+                { required: true, message: "Vui lòng nhập mã phòng ban!" },
+              ]}
+              style={{ flex: 1 }}
+            >
+              <Input placeholder="Mã phòng ban" readOnly />
+            </Form.Item>
+            <Form.Item
+              name="departmentName"
+              label="Tên phòng ban"
+              rules={[
+                { required: true, message: "Vui lòng nhập tên phòng ban!" },
+              ]}
+              style={{ flex: 1 }}
+            >
+              <Input placeholder="Tên phòng ban" />
+            </Form.Item>
+          </div>
+          <Form.Item style={{ textAlign: "right", marginBottom: 0 }}>
+            <Button
+              type="primary"
+              htmlType="submit"
+              loading={loading}
+            >
+              Thêm
+            </Button>
+          </Form.Item>
+        </Form>
+
+        {/* === Khung tìm kiếm === */}
+        <Space style={{ marginBottom: 20 }}>
+          <Input
+            placeholder="Tìm kiếm..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            prefix={<SearchOutlined />}
+            style={{ width: 300 }}
+          />
+        </Space>
+
+        {/* === Bảng hiển thị === */}
+        <Table
+          columns={columns}
+          dataSource={filtered}
+          rowKey="MAPB"
+          loading={loading}
+          pagination={false}
+          scroll={{ x: true }}
+          locale={{ emptyText: "Không có dữ liệu" }}
+        />
+
+        {/* === Modal chỉnh sửa === */}
+        <Modal
+          title="Chỉnh sửa phòng ban"
+          visible={editing}
+          onCancel={() => {
+            setEditing(false);
+            setEditingItem(null);
+            editForm.resetFields();
+          }}
+          onOk={handleUpdate}
+          okText="Cập nhật"
+          confirmLoading={loading}
+        >
+          <Form form={editForm} layout="vertical">
+            <Form.Item name="departmentCode" label="Mã phòng ban">
+              <Input disabled />
+            </Form.Item>
+            <Form.Item
+              name="departmentName"
+              label="Tên phòng ban"
+              rules={[
+                { required: true, message: "Vui lòng nhập tên phòng ban!" },
+              ]}
+            >
+              <Input placeholder="Tên phòng ban" />
+            </Form.Item>
+          </Form>
+        </Modal>
+      </Content>
+    </Layout>
+  );
+};
+
+export default DepartmentManagement;

@@ -16,12 +16,13 @@ import {
   TableHead,
   TableRow,
   TableCell,
-  TableBody
+  TableBody,
 } from '@mui/material';
 import InfoCard from '../../components/InfoCard/infocard';
 import PeopleIcon from '@mui/icons-material/People';
 import { Pie } from 'react-chartjs-2';
 import { Bar, Line } from 'react-chartjs-2';
+import { Layout } from 'antd';
 import {
   Chart as ChartJS,
   ArcElement,
@@ -39,7 +40,7 @@ import {
   getLeaveStatistics,
   getDepartmentStatistics
 } from '../../api/DashboardApi';
-
+ 
 ChartJS.register(
   ArcElement,
   Tooltip,
@@ -144,6 +145,7 @@ const Dashboard = () => {
   const chartOptions = { maintainAspectRatio: false, responsive: true };
 
   return (
+    <Layout style={{ background: '#fff' }}>
     <Box p={4}>
       <Typography variant="h4" sx={{ fontSize: '2rem', mb: 2 }}>Tổng quan Nhân sự</Typography>
       {renderFilter(ovYear, ovMonth, ovCompare, setOvYear, setOvMonth, setOvCompare, fetchOverview)}
@@ -259,6 +261,7 @@ const Dashboard = () => {
         </Table>
       </TableContainer>
     </Box>
+    </Layout>
   );
 };
 

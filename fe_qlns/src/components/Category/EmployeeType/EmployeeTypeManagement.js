@@ -1,238 +1,259 @@
-// src/pages/EmployeeTypeManagement.js
-import React, { useEffect, useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Layout,
   Form,
   Input,
   Button,
-  Select,
   Table,
   Space,
-  message,
+  Modal,
+  Popconfirm
 } from "antd";
-import { toast } from 'react-toastify';
 import {
   SearchOutlined,
-  PlusOutlined,
   EditOutlined,
-  DeleteOutlined,
+  DeleteOutlined
 } from "@ant-design/icons";
-import EmployeeTypeModal from "./EmployeeTypeModal";
-import { getAllEmployeeTypes } from "../../../api/employeeTypeModalApi"; // ✅ Import API
+import {
+  getAllEmployeeTypes,
+  createEmployeeType,
+  updateEmployeeType,
+  deleteEmployeeType,
+  getAutoCode
+} from "../../../api/employeeTypeModalApi";
+import { toast } from 'react-toastify';
 
 const { Content } = Layout;
-const { Option } = Select;
 
 const EmployeeTypeManagement = () => {
   const [form] = Form.useForm();
-  const [searchTerm, setSearchTerm] = useState("");
-  const [filter, setFilter] = useState("");
-  const [employees, setEmployees] = useState([]);
+  const [editForm] = Form.useForm();
   const [employeeTypes, setEmployeeTypes] = useState([]);
+  const [filtered, setFiltered] = useState([]);
+  const [searchTerm, setSearchTerm] = useState("");
   const [loading, setLoading] = useState(false);
-  const [modalVisible, setModalVisible] = useState(false);
+  const [editing, setEditing] = useState(false);
+  const [editingItem, setEditingItem] = useState(null);
 
-  // ✅ Gọi API lấy loại nhân viên
-  const fetchEmployeeTypes = async () => {
+  useEffect(() => {
+    loadTypes();
+    genCode();
+  }, []);
+
+  const genCode = async () => {
+    try {
+      const res = await getAutoCode();
+      if (res.data?.code) form.setFieldsValue({ employeeTypeCode: res.data.code });
+    } catch {
+      toast.error("Không lấy được mã mới");
+    }
+  };
+
+  const loadTypes = async () => {
+    setLoading(true);
     try {
       const res = await getAllEmployeeTypes();
-      const data = res.data.Data.map((item) => ({
+      const list = res.data.Data.map(item => ({
+        id: item.MALNV,
         employeeTypeCode: item.MALNV,
-        employeeTypeName: item.TENLNV,
+        employeeTypeName: item.TENLNV
       }));
-      setEmployeeTypes(data);
-    } catch (err) {
-      toast.error(err.response.data.Message);
+      setEmployeeTypes(list);
+      setFiltered(list);
+    } catch {
+      toast.error("Tải danh sách thất bại");
+    } finally {
+      setLoading(false);
     }
   };
 
   useEffect(() => {
-    fetchEmployeeTypes();
-  }, []);
-
-  const handleAddEmployee = (values) => {
-    setLoading(true);
-    setTimeout(() => {
-      const newEmployee = {
-        id: Date.now(),
-        employeeName: values.employeeName,
-        employeeType: values.employeeType,
-      };
-      setEmployees([...employees, newEmployee]);
-      message.success("Thêm nhân viên thành công!");
-      form.resetFields();
-      setLoading(false);
-    }, 1000);
-  };
-
-  const handleSearch = () => {
-    const filtered = employees.filter(
-      (e) =>
-        e.employeeName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        e.employeeType.toLowerCase().includes(searchTerm.toLowerCase())
+    if (!searchTerm) {
+      setFiltered(employeeTypes);
+      return;
+    }
+    const lower = searchTerm.toLowerCase();
+    setFiltered(
+      employeeTypes.filter(
+        t =>
+          t.employeeTypeCode.toLowerCase().includes(lower) ||
+          t.employeeTypeName.toLowerCase().includes(lower)
+      )
     );
-    setEmployees(filtered);
+  }, [searchTerm, employeeTypes]);
+
+  const handleAdd = async values => {
+    setLoading(true);
+    try {
+      const payload = { MALNV: values.employeeTypeCode, TENLNV: values.employeeTypeName };
+      const res = await createEmployeeType(payload);
+      if (res.data?.Success) {
+        toast.success(res.data.Message);
+        form.resetFields();
+        await loadTypes();
+        await genCode();
+      } else {
+        toast.error(res.data.Message || "Thêm thất bại");
+      }
+    } catch {
+      toast.error("Lỗi thêm loại nhân viên");
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const handleFilter = (value) => {
-    setFilter(value);
+  const startEdit = record => {
+    setEditing(true);
+    setEditingItem(record);
+    editForm.setFieldsValue({
+      employeeTypeCode: record.employeeTypeCode,
+      employeeTypeName: record.employeeTypeName
+    });
   };
 
-  const handleDelete = (id) => {
-    setEmployees(employees.filter((e) => e.id !== id));
-    message.success("Đã xóa nhân viên");
+  const handleUpdate = async () => {
+    setLoading(true);
+    try {
+      const vals = await editForm.validateFields();
+      const payload = { MALNV: editingItem.id, TENLNV: vals.employeeTypeName };
+      const res = await updateEmployeeType(payload);
+      if (res.data?.Success) {
+        toast.success(res.data.Message);
+        setEditing(false);
+        await loadTypes();
+      } else {
+        toast.error(res.data.Message || "Cập nhật thất bại");
+      }
+    } catch {
+      toast.error("Lỗi cập nhật");
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const handleEdit = (id) => {
-    message.info("Chức năng sửa chưa hỗ trợ");
+  const handleDelete = async id => {
+    setLoading(true);
+    try {
+      const res = await deleteEmployeeType({ MALNV: id });
+      if (res.data?.Success) {
+        toast.success(res.data.Message);
+        await loadTypes();
+      } else {
+        toast.error(res.data.Message || "Xóa thất bại");
+      }
+    } catch {
+      toast.error("Lỗi xóa");
+    } finally {
+      setLoading(false);
+    }
   };
 
   const columns = [
-    {
-      title: "Tên nhân viên",
-      dataIndex: "employeeName",
-      key: "employeeName",
-    },
-    {
-      title: "Loại nhân viên",
-      dataIndex: "employeeType",
-      key: "employeeType",
-    },
+    { title: "Mã loại", dataIndex: "employeeTypeCode", key: "code" },
+    { title: "Tên loại", dataIndex: "employeeTypeName", key: "name" },
     {
       title: "Tùy chọn",
       key: "action",
       render: (_, record) => (
         <Space>
-          <Button
-            icon={<EditOutlined />}
-            style={{ backgroundColor: "#ffc107", borderColor: "#ffc107" }}
-            onClick={() => handleEdit(record.id)}
+          <Button icon={<EditOutlined />} onClick={() => startEdit(record)}>Sửa</Button>
+          <Popconfirm
+            title="Xác nhận xóa?"
+            onConfirm={() => handleDelete(record.id)}
+            okText="Xóa"
+            cancelText="Hủy"
           >
-            Sửa
-          </Button>
-          <Button
-            icon={<DeleteOutlined />}
-            danger
-            onClick={() => handleDelete(record.id)}
-          >
-            Xóa
-          </Button>
+            <Button icon={<DeleteOutlined />} danger />
+          </Popconfirm>
         </Space>
-      ),
-    },
+      )
+    }
   ];
 
   return (
-    <Layout style={{ backgroundColor: "white", margin: 0, borderRadius: "8px" }}>
+    <Layout style={{ backgroundColor: "white", borderRadius: 8 }}>
       <Content style={{ padding: 20 }}>
         <Form
           form={form}
           layout="vertical"
-          onFinish={handleAddEmployee}
+          onFinish={handleAdd}
           style={{
-            backgroundColor: "#fff",
+            background: '#fff',
             padding: 20,
             borderRadius: 8,
-            boxShadow: "0 2px 10px rgba(0,0,0,0.1)",
-            marginBottom: 20,
+            boxShadow: '0 2px 10px rgba(0,0,0,0.1)',
+            marginBottom: 20
           }}
         >
-          <div style={{ display: "flex", gap: 16, alignItems: "flex-end" }}>
+          <div style={{ display: 'flex', gap: 16 }}>
             <Form.Item
-              name="employeeName"
-              label="Tên nhân viên"
-              rules={[{ required: true, message: "Hãy nhập tên nhân viên!" }]}
+              name="employeeTypeCode"
+              label="Mã loại nhân viên"
+              rules={[{ required: true, message: 'Nhập mã!' }]}
               style={{ flex: 1 }}
             >
-              <Input placeholder="Tên nhân viên" />
+              <Input readOnly />
             </Form.Item>
             <Form.Item
-              name="employeeType"
-              label={
-                <span>
-                  Loại nhân viên{" "}
-                  <Button
-                    type="link"
-                    icon={<PlusOutlined />}
-                    onClick={() => setModalVisible(true)}
-                    style={{ padding: 0, marginLeft: -5 }}
-                  />
-                </span>
-              }
-              rules={[{ required: true, message: "Hãy chọn loại nhân viên!" }]}
+              name="employeeTypeName"
+              label="Tên loại nhân viên"
+              rules={[{ required: true, message: 'Nhập tên!' }]}
               style={{ flex: 1 }}
             >
-              <Select placeholder="Chọn loại nhân viên">
-                {employeeTypes.map((type) => (
-                  <Option
-                    key={type.employeeTypeCode}
-                    value={type.employeeTypeName}
-                  >
-                    {type.employeeTypeName}
-                  </Option>
-                ))}
-              </Select>
-            </Form.Item>
-            <Form.Item>
-              <Button
-                type="primary"
-                htmlType="submit"
-                style={{ backgroundColor: "#3e0fe6" }}
-                
-              >
-                Thêm
-              </Button>
+              <Input placeholder="Tên loại nhân viên" />
             </Form.Item>
           </div>
+          <Form.Item style={{ textAlign: 'right', marginBottom: 0 }}>
+            <Button type="primary" htmlType="submit" loading={loading}>
+              Thêm
+            </Button>
+          </Form.Item>
         </Form>
 
         <Space style={{ marginBottom: 20 }}>
           <Input
             placeholder="Tìm kiếm..."
             value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            prefix={<SearchOutlined style={{ color: "#007bff" }} />}
-            onPressEnter={handleSearch}
+            onChange={e => setSearchTerm(e.target.value)}
+            prefix={<SearchOutlined />}
             style={{ width: 300 }}
           />
-          <Select
-            placeholder="Lọc"
-            value={filter}
-            onChange={handleFilter}
-            style={{ width: 150 }}
-          >
-            <Option value="">Tất cả</Option>
-            {[...new Set(employees.map((e) => e.employeeType))].map((type) => (
-              <Option key={type} value={type}>
-                {type}
-              </Option>
-            ))}
-          </Select>
         </Space>
 
         <Table
           columns={columns}
-          dataSource={employees}
+          dataSource={filtered}
           rowKey="id"
+          loading={loading}
           pagination={false}
           scroll={{ x: true }}
-          locale={{ emptyText: "Không có dữ liệu" }}
         />
 
-        <EmployeeTypeModal
-          visible={modalVisible}
-          onCancel={() => {
-            setModalVisible(false);
-            fetchEmployeeTypes(); // 🔁 Reload sau khi thêm/sửa
-          }}
-          employeeTypes={employeeTypes}
-          setEmployeeTypes={setEmployeeTypes}
-          loading={loading}
-          setLoading={setLoading}
-        />
+        <Modal
+          title="Chỉnh sửa loại nhân viên"
+          open={editing}
+          onCancel={() => setEditing(false)}
+          onOk={handleUpdate}
+          okText="Cập nhật"
+          confirmLoading={loading}
+        >
+          <Form form={editForm} layout="vertical">
+            <Form.Item name="employeeTypeCode" label="Mã loại nhân viên">
+              <Input disabled />
+            </Form.Item>
+            <Form.Item
+              name="employeeTypeName"
+              label="Tên loại nhân viên"
+              rules={[{ required: true, message: 'Nhập tên!' }]}
+            >
+              <Input />
+            </Form.Item>
+          </Form>
+        </Modal>
       </Content>
     </Layout>
   );
 };
 
 export default EmployeeTypeManagement;
+

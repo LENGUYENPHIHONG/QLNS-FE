@@ -2,7 +2,7 @@
 import React, { useEffect, useState } from "react";
 import { Descriptions, Image, Spin, message, Row, Col } from "antd";
 import { getEmployeeDetail } from "../../api/employeeApi";
-
+import { toast } from 'react-toastify';
 //const API_URL = process.env.REACT_APP_API_URL;
 
 const EmployeeDetailTab = ({ employeeId }) => {
@@ -18,9 +18,9 @@ const EmployeeDetailTab = ({ employeeId }) => {
     try {
       const res = await getEmployeeDetail(employeeId);
       if (res.data?.Success) setEmployee(res.data.Data);
-      else message.error("Không tải được chi tiết nhân viên");
+      else toast.error("Không tải được chi tiết nhân viên");
     } catch {
-      message.error("Lỗi khi gọi API chi tiết");
+      toast.error("Lỗi khi gọi API chi tiết");
     } finally {
       setLoading(false);
     }

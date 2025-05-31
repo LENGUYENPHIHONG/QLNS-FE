@@ -1,103 +1,34 @@
-// src/components/HeaderComponent.js
+// src/components/HeaderComponent.jsx
 
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import axios from "axios";
-import { message } from "antd"; 
-import { Layout, Button, Dropdown, Menu, Space, Avatar, Badge, Spin } from "antd";
+import { useNavigate } from "react-router-dom";
 import {
-  MenuOutlined,
+  Layout,
+  Button,
+  Space,
+  Avatar,
+  Dropdown,
+  Menu,
+  message,
+} from "antd";
+import {
   MailOutlined,
-  BellOutlined,
   SettingOutlined,
   LogoutOutlined,
+  UserOutlined,
 } from "@ant-design/icons";
-
-import logo from "../../image/qlns.png"; // logo cục bộ nếu bạn dùng
+import logo from "../../image/qlns.png";
+import NotificationDropdown from "../NotificationDropdown/NotificationDropdown";
 
 const { Header } = Layout;
 
-const HeaderComponent = ({ collapsed, userInfo }) => {
-  const [open, setOpen] = useState(false);
-  const [notifications, setNotifications] = useState([]);
-  const [loading, setLoading] = useState(false);
+export default function HeaderComponent({ collapsed, userInfo }) {
+  const navigate = useNavigate();
+  const [openUserMenu, setOpenUserMenu] = useState(false);
 
-  // console.log("Thông tin user:", userInfo);
-
-  // 1. Load notifications chưa đọc
-  const loadNotifications = async () => {
-    setLoading(true);
-    try {
-      const { data } = await axios.get(
-        `${process.env.REACT_APP_API_URL}/api/ThongBao/unread`,
-        { withCredentials: true }
-      );
-      //console.log("Thông báo chưa đọc:", data.Items);
-      setNotifications(data.Items);
-      //console.log("Số thông báo chưa đọc:", notifications);
-    } catch (err) {
-      console.error("Lỗi fetch thông báo:", err);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    loadNotifications();
-    // nếu cần auto-refresh định kỳ thì dùng setInterval ở đây
-  }, []);
-
-  // 2. Click vào từng thông báo: đánh dấu đã đọc và điều hướng
-  const handleNotificationClick = async (item) => {
-    try {
-      await axios.put(
-        `${process.env.REACT_APP_API_URL}/api/ThongBao/${item.MaThongBao}/read`,
-        null,
-        { withCredentials: true }
-      );
-      // remove khỏi danh sách
-      setNotifications((prev) =>
-        prev.filter(n => n.MaThongBao !== item.MaThongBao)
-      );
-      // điều hướng nếu có
-      if (item.bang_lien_quan && item.id_lien_quan) {
-        window.location.href = `/${item.bang_lien_quan}/${item.id_lien_quan}`;
-      }
-    } catch (err) {
-      console.error("Đánh dấu thông báo đã đọc thất bại:", err);
-    }
-  };
-
-  // 3. Menu dropdown thông báo
-  const notificationMenu = (
-  <Menu>
-    {loading
-      ? <Menu.Item key="loading"><Spin size="small" /></Menu.Item>
-      : notifications.length === 0
-        ? <Menu.Item key="empty">Không có thông báo mới</Menu.Item>
-        : notifications.map(item => (
-            <Menu.Item
-              key={item.MaThongBao}
-              onClick={() => handleNotificationClick(item)}
-            >
-              <div style={{ maxWidth: 250, whiteSpace: "normal" }}>
-                <strong>{item.TieuDe}</strong>
-                <div style={{ fontSize: 12, color: "#666", margin: 4 }}>
-                  {item.NoiDung}
-                </div>
-                <div style={{ fontSize: 10, color: "#999", textAlign: "right" }}>
-                  { item.ThoiGianTao
-                    ? new Date(item.ThoiGianTao).toLocaleString("vi-VN")
-                    : "" }
-                </div>
-              </div>
-            </Menu.Item>
-          ))
-    }
-  </Menu>
-);
-  // menu user (unchanged)
   const handleMenuClick = async ({ key }) => {
-    setOpen(false);
+    setOpenUserMenu(false);
     if (key === "2") {
       try {
         await axios.post(
@@ -128,10 +59,9 @@ const HeaderComponent = ({ collapsed, userInfo }) => {
   return (
     <Header
       style={{
-        backgroundColor: "#ffffffe6",
-        backdropFilter: "blur(5px)",
-        padding: "0 20px",
-        height: "65px",
+         backgroundColor: "#fff",
+        padding: "0 24px",
+        height: 65,
         position: "fixed",
         top: 0,
         left: collapsed ? 80 : 220,
@@ -139,77 +69,39 @@ const HeaderComponent = ({ collapsed, userInfo }) => {
         zIndex: 1001,
         display: "flex",
         alignItems: "center",
+        boxShadow: "0 1px 4px rgba(0,21,41,.08)",
       }}
     >
       {/* Logo */}
       <div style={{ display: "flex", alignItems: "center" }}>
-        <img
-          src={logo}
-          alt="Logo"
-          style={{ height: "40px", marginRight: "10px" }}
-        />
+        <img src={logo} alt="Logo" style={{ height: 40, marginRight: 16 }} />
       </div>
 
-      <Space
-        style={{ marginLeft: "auto", display: "flex", alignItems: "center" }}
-      >
-        {/* Mail */}
-        <Button
-          type="text"
-          icon={<MailOutlined style={{ fontSize: "20px", color: "#000" }} />}
-          style={{
-            width: "40px",
-            height: "40px",
-            background: "#f0f5ff",
-            borderRadius: "50%",
-          }}
-        />
+      {/* Actions */}
+      <Space style={{ marginLeft: "auto", alignItems: "center", gap: 16 }}>
 
         {/* Notification */}
-        <Dropdown
-          overlay={notificationMenu}
-          trigger={["click"]}
-          placement="bottomRight"
-        >
-          <Badge
-            count={notifications.length}
-            overflowCount={99}
-            offset={[0, 0]}
-          >
-            <Button
-              type="text"
-              icon={<BellOutlined style={{ fontSize: "20px", color: "#000" }} />}
-              style={{
-                width: "40px",
-                height: "40px",
-                background: "#f0f5ff",
-                borderRadius: "50%",
-              }}
-            />
-          </Badge>
-        </Dropdown>
+        <NotificationDropdown />
 
-        {/* User avatar + name */}
+        {/* User */}
         <Dropdown
           overlay={userMenu}
           trigger={["click"]}
-          onOpenChange={(visible) => setOpen(visible)}
-          open={open}
+          onOpenChange={(v) => setOpenUserMenu(v)}
+          open={openUserMenu}
         >
           <Space style={{ cursor: "pointer" }}>
             <Avatar
-              src="https://mironcoder-hotash.netlify.app/images/avatar/01.webp"
-              size="large"
-              style={{ border: "1px solid #0858f7" }}
+              icon={<UserOutlined />}
+                size="large"
+                style={{ border: "1px solid #0858f7" }}
             />
-            <span style={{ fontSize: "18px", fontWeight: "600", color: "#000" }}>
-              {userInfo?.TenNhanVien || "Null"}
+            <span style={{ fontSize: 18, fontWeight: 600, marginLeft: 8 }}>
+              {userInfo?.TenNhanVien || "User"}
             </span>
           </Space>
         </Dropdown>
       </Space>
     </Header>
   );
-};
-
-export default HeaderComponent;
+}

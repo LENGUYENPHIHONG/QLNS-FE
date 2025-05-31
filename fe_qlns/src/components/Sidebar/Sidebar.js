@@ -26,7 +26,7 @@ const Sidebar = ({ collapsed, onToggle }) => {
   useEffect(() => {
     const path = location.pathname;
     setSelectedKey(path);
-    if (path.includes("/danhsachnhanvien") || path.includes("/kynangnhanvien") ||path.includes("/taotaikhoannhanvien")) {
+    if (path.includes("/danhsachnhanvien") || path.includes("/kynangnhanvien") || path.includes("/dieuchuyenpb") ||path.includes("/taotaikhoannhanvien")) {
       setOpenKeys(["user"]);
     } else if (path.includes("/danhsachhopdong")) {
       setOpenKeys(["contract"]);
@@ -126,6 +126,9 @@ const Sidebar = ({ collapsed, onToggle }) => {
           </Menu.Item>
           <Menu.Item key="/kynangnhanvien">
             <Link to="/kynangnhanvien">Kỹ năng nhân viên</Link>
+          </Menu.Item>
+          <Menu.Item key="/dieuchuyenpb">
+            <Link to="/dieuchuyenpb">Điều chuyển phòng ban</Link>
           </Menu.Item>
           <Menu.Item key="/taotaikhoannhanvien">
             <Link to="/taotaikhoannhanvien">Tạo tài khoản </Link>

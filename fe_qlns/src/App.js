@@ -36,6 +36,7 @@ import SkillsManagement from "./components/Category/SkillsManagement/SkillsManag
 import ContractManagement from "./pages/Contract/Contract";
 import EmployeeTrainingManagement from "./pages/EmployeeTrainingManagement/EmployeeTrainingManagement";
 import KhenThuongPage from "./pages/KhenThuongKiLuat/KhenThuongPage.js";
+import DepartmentTransferPage from "./pages/EmployeePage/DepartmentTransferPage.js";
 import KyLuatPage from "./pages/KhenThuongKiLuat/KyLuatPage.js";
 import EmployeeAccountPage from "./pages/EmployeePage/EmployeeAccountPage.js";
 import InsuranceManagement from "./pages/InsurancePage/InsurancePage";
@@ -137,8 +138,13 @@ const AppLayout = ({ collapsed, toggleSidebar }) => {
                                 element={<PositionManagement />}
                             />
                             <Route
+                            
                                 path="/danhsachhopdong"
                                 element={<ContractManagement />}
+                            />
+                            <Route
+                                path="/dieuchuyenpb"
+                                element={<DepartmentTransferPage />}
                             />
                             <Route
                                 path="/danhsachbaohiem"

@@ -13,16 +13,27 @@ import {
   Dropdown,
   Menu,
   Form,
-  Image
+  Image,
+  Upload,
+  message,
+  Select,
+  Switch
 } from "antd";
 import {
   SearchOutlined,
   PlusOutlined,
   EditOutlined,
-  DeleteOutlined
+  DeleteOutlined,
+  UploadOutlined,
+  DownloadOutlined,
 } from "@ant-design/icons";
 import EmployeeContractsTab from "../Tab/EmployeeContractsTab";
 import EmployeeDetailTab from "../Tab/EmployeeDetailTab";
+import EmployeeInsurancesTab from "../Tab/EmployeeInsurancesTab";
+import EmployeeLeavesTab from "../Tab/EmployeeLeavesTab";
+import EmployeeTrainingsTab from "../Tab/EmployeeTrainingsTab";
+import EmployeeRewardsTab from "../Tab/EmployeeRewardsTab";
+import EmployeeKyLuatTab from "../Tab/EmployeeKyLuatTab";
 import EmployeeAddModal from "./EmployeeAddModal";
 import EmployeeDetailModal from "./EmployeeDetailModal";
 import {
@@ -30,7 +41,9 @@ import {
   deleteEmployee,
   createEmployee,
   updateEmployee,
-  getEmployeeDetail
+  getEmployeeDetail,
+  importEmployees,
+  exportEmployees
 } from "../../api/employeeApi";
 import { fetchContracts } from "../../api/contractApi";
 import {
@@ -51,13 +64,14 @@ const EmployeeListPage = () => {
   const [employees, setEmployees] = useState([]);
   const [filteredEmployees, setFilteredEmployees] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
-
+  const [selectedRowKeys, setSelectedRowKeys] = useState([]);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [editEmployee, setEditEmployee] = useState(null);
   const [form] = Form.useForm();
   const [fileList, setFileList] = useState([]);
   const [loading, setLoading] = useState(false);
-
+const [statusFilter, setStatusFilter] = useState(null);
+const [showDeleted, setShowDeleted] = useState(false);
   const [departments, setDepartments] = useState([]);
   const [positions, setPositions] = useState([]);
   const [educationLevels, setEducationLevels] = useState([]);
@@ -80,10 +94,16 @@ const EmployeeListPage = () => {
     loadDropdowns();
   }, []);
 
-  const loadEmployees = async (page = 1, pageSize = pagination.pageSize) => {
-    setLoading(true);
-    try {
-      const res = await fetchEmployees(page, pageSize);
+  const loadEmployees = async (
+   page = 1,
+   pageSize = pagination.pageSize,
+   status = statusFilter,
+   deleted = showDeleted
+ ) => {
+   setLoading(true);
+   try {
+     // Gọi API kèm statusFilter và showDeleted
+     const res = await fetchEmployees(page, pageSize, /*search=*/ null, status, deleted);
       if (res.data?.Data) {
         const data = res.data.Data.map(e => ({
           id: e.MANV,
@@ -136,26 +156,26 @@ const EmployeeListPage = () => {
     setLoading(true);
     try {
       const payload = {
-  MANV: values.id,
-  TENNV: values.name,
-  NGAYSINH: values.birthDate?.format('YYYY-MM-DD') || null,
-  GIOITINH: values.gender || null,
-  CCCD: values.cccd || null,
-  SODIENTHOAI: values.phone || null,
-  QUOCTICH: values.nationality || null,
-  DANTOC: values.ethnicity || null,
-  TONGIAO: values.religion || null,
-  HONNHAN: values.maritalStatus || null,
-  NOISINH: values.birthPlace || null,
-  DIACHI: values.address || null,
-  NGAYVAOLAM: values.joinDate?.format('YYYY-MM-DD') || null,
-  IMAGEBASE64: values.IMAGEBASE64 || "",
-  MAPB: values.department ? [values.department] : [],
-  MACV: values.position ? [values.position] : [],
-  MATD: values.education || null,
-  MACM: values.specialization || null,
-  MALNV: values.employeeType || null
-};
+        MANV: values.id,
+        TENNV: values.name,
+        NGAYSINH: values.birthDate?.format('YYYY-MM-DD') || null,
+        GIOITINH: values.gender || null,
+        CCCD: values.cccd || null,
+        SODIENTHOAI: values.phone || null,
+        QUOCTICH: values.nationality || null,
+        DANTOC: values.ethnicity || null,
+        TONGIAO: values.religion || null,
+        HONNHAN: values.maritalStatus || null,
+        NOISINH: values.birthPlace || null,
+        DIACHI: values.address || null,
+        NGAYVAOLAM: values.joinDate?.format('YYYY-MM-DD') || null,
+        IMAGEBASE64: values.IMAGEBASE64 || "",
+        MAPB: values.department ? [values.department] : [],
+        MACV: values.position ? [values.position] : [],
+        MATD: values.education || null,
+        MACM: values.specialization || null,
+        MALNV: values.employeeType || null
+      };
       const res = isEdit ? await updateEmployee(values.id, payload) : await createEmployee(payload);
       if (res.data?.Success) {
         toast.success(isEdit ? 'Cập nhật thành công' : 'Thêm thành công');
@@ -216,13 +236,14 @@ const EmployeeListPage = () => {
         toast.success(res.data.Message);
         loadEmployees();
       } else toast.error(res.data.Message);
-    } catch {
-      toast.error('Lỗi khi xóa');
+    } catch (err) {
+      console.error(err);
+      toast.error(err.response?.data?.Message || 'Lỗi khi xóa nhân viên');
     }
   };
 
   // Utility action
-   const openUtilityDrawer = (id, key) => {
+  const openUtilityDrawer = (id, key) => {
     setSelectedEmpId(id);
     setActiveTab(key);
     setIsDrawerOpen(true);
@@ -233,18 +254,32 @@ const EmployeeListPage = () => {
       <Menu.Item key="detail">Chi tiết nhân viên</Menu.Item>
       <Menu.Item key="contracts">Hợp đồng</Menu.Item>
       <Menu.Item key="insurances">Bảo hiểm</Menu.Item>
-      <Menu.Item key="leaves" disabled>Nghỉ phép</Menu.Item>
-      <Menu.Item key="trainings" disabled>Đào tạo</Menu.Item>
-      <Menu.Item key="rewards" disabled>Khen thưởng & Kỷ luật</Menu.Item>
+      <Menu.Item key="leaves" >Nghỉ phép</Menu.Item>
+      <Menu.Item key="trainings" >Đào tạo</Menu.Item>
+      <Menu.Item key="rewards" >Khen thưởng</Menu.Item>
+      <Menu.Item key="discipline" >Kỷ luật</Menu.Item>
     </Menu>
   );
 
   const columns = [
     { title: 'Mã NV', dataIndex: 'id', key: 'id' },
     {
-      title: 'Tên nhân viên', dataIndex: 'name', key: 'name', render: (text, rec) => (
-        <Dropdown overlay={utilityMenu(rec)} trigger={['click']}>
-          <span style={{ cursor: 'pointer', color: '#1890ff' }}>{text}</span>
+      title: 'Tên nhân viên',
+      dataIndex: 'name',
+      key: 'name',
+      render: (text, record) => (
+        <Dropdown overlay={utilityMenu(record)} trigger={['click']} getPopupContainer={trigger => trigger.parentNode}>
+          <div
+            style={{
+              width: '100%',
+              height: '100%',
+              cursor: 'pointer',
+              color: '#1890ff',
+              padding: '8px'  // giữ padding giống ô table
+            }}
+          >
+            {text}
+          </div>
         </Dropdown>
       )
     },
@@ -275,9 +310,83 @@ const EmployeeListPage = () => {
       <Content style={{ padding: 20 }}>
         <Space style={{ marginBottom: 20 }}>
           <Input placeholder='Tìm kiếm...' prefix={<SearchOutlined />} value={searchTerm} onChange={handleSearch} style={{ width: 300 }} />
+
+          {/* BEGIN FILTER: Select trạng thái */}
+          <Select
+            placeholder="Chọn trạng thái"
+            style={{ width: 180 }}
+           allowClear
+            value={statusFilter}
+            onChange={val => {
+              setStatusFilter(val);
+              // Sau khi chọn trạng thái, gọi loadEmployees page=1
+              loadEmployees(1, pagination.pageSize, val, showDeleted);
+            }}
+          >
+            <Select.Option value="Chưa kí hợp đồng">Chưa kí hợp đồng</Select.Option>
+            <Select.Option value="Đang làm việc">Đang làm việc</Select.Option>
+            <Select.Option value="Đã nghỉ việc">Đã nghỉ việc</Select.Option>
+          </Select>
+          {/* END FILTER */}
+
+          {/* BEGIN FILTER: Switch hiển thị nhân viên đã xóa */}
+          <span style={{ display: 'flex', alignItems: 'center' }}>
+            Hiển thị đã xóa:&nbsp;
+            <Switch
+             checked={showDeleted}
+              onChange={checked => {
+               setShowDeleted(checked);
+               // Sau khi toggle showDeleted, gọi loadEmployees page=1
+               loadEmployees(1, pagination.pageSize, statusFilter, checked);              }}            />
+         </span>          {/* END FILTER */}
           <Button type='primary' icon={<PlusOutlined />} onClick={() => setIsAddModalOpen(true)}>Thêm nhân viên</Button>
+          {/* Import */}
+          <Upload
+            accept=".xlsx"
+            showUploadList={false}
+            beforeUpload={file => {
+              importEmployees(file)
+                .then(res => {
+                  message.success('Import thành công');
+                  loadEmployees();
+                })
+                .catch(err => {
+                  console.error(err.response.data);
+                  message.error(err.response?.data?.Message || 'Import thất bại');
+                });
+              // Không tự động upload lại
+              return false;
+            }}
+          >
+            <Button icon={<UploadOutlined />}>Import Excel</Button>
+          </Upload>
+          {/* Export */}
+          <Button
+            icon={<DownloadOutlined />}
+            disabled={selectedRowKeys.length === 0}
+            onClick={() => {
+              exportEmployees(selectedRowKeys)
+                .then(({ data }) => {
+                  const blob = new Blob([data], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+                  const url = window.URL.createObjectURL(blob);
+                  const a = document.createElement('a');
+                  a.href = url;
+                  a.download = `DanhSachNhanVien_${dayjs().format('YYYYMMDD_HHmmss')}.xlsx`;
+                  a.click();
+                  window.URL.revokeObjectURL(url);
+                })
+                .catch(() => message.error('Export thất bại'));
+            }}
+          >
+            Export Excel
+          </Button>
         </Space>
         <Table
+
+          rowSelection={{
+            selectedRowKeys,
+            onChange: keys => setSelectedRowKeys(keys)
+          }}
           columns={columns}
           dataSource={filteredEmployees}
           rowKey='id'
@@ -317,10 +426,21 @@ const EmployeeListPage = () => {
             <TabPane tab="Hợp đồng" key="contracts">
               <EmployeeContractsTab employeeId={selectedEmpId} />
             </TabPane>
-            <TabPane tab='Bảo hiểm' key='insurances'>Chưa hỗ trợ</TabPane>
-            <TabPane tab='Nghỉ phép' key='leaves'>Chưa hỗ trợ</TabPane>
-            <TabPane tab='Đào tạo' key='trainings'>Chưa hỗ trợ</TabPane>
-            <TabPane tab='Khen thưởng & Kỷ luật' key='rewards'>Chưa hỗ trợ</TabPane>
+            <TabPane key="insurances" tab="Bảo hiểm">
+              <EmployeeInsurancesTab employeeId={selectedEmpId} />
+            </TabPane>
+            <TabPane tab="Nghỉ phép" key="leaves">
+              <EmployeeLeavesTab employeeId={selectedEmpId} />
+              </TabPane>
+            <TabPane tab="Đào tạo" key="trainings">
+              <EmployeeTrainingsTab employeeId={selectedEmpId} />
+            </TabPane>
+            <TabPane tab="Khen thưởng" key="rewards">
+              <EmployeeRewardsTab  employeeId={selectedEmpId} />
+            </TabPane>
+            <TabPane tab="Kỷ luật" key="discipline">
+              <EmployeeKyLuatTab  employeeId={selectedEmpId} />
+            </TabPane>
           </Tabs>
         </Drawer>
 
