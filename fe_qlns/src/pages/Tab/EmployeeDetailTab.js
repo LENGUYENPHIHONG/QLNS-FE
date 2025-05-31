@@ -36,7 +36,7 @@ const EmployeeDetailTab = ({ employeeId }) => {
       <Col span={6}>
         {employee.ANH
           ? <Image
-              src={employee.ANH}
+              src={employee.ANH.replace(/^http:\/\//, 'https://')}
               width={200}
               height={240}
               style={{ objectFit: 'cover', borderRadius: 8 }}
