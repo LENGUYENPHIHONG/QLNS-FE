@@ -6,7 +6,7 @@ const BASE_URL = process.env.REACT_APP_API_URL ;
  * Lấy mã Khen Thưởng mới
  */
 export const getMaKT = async () => {
-  const response = await axios.get(`${BASE_URL}/api/KhenThuong/MaKT`);
+  const response = await axios.get(`/api/KhenThuong/MaKT`);
   return response.data.code;
 };
 
@@ -15,7 +15,7 @@ export const getMaKT = async () => {
  *{ maNhanVien, year, trangThai, search, page, pageSize }
  */
 export const getDanhSachKT = async (params) => {
-  const response = await axios.get(`${BASE_URL}/api/KhenThuong/DanhSachKT`, {
+  const response = await axios.get(`/api/KhenThuong/DanhSachKT`, {
     params: {
       maNhanVien: params.maNhanVien,
       year: params.year,
@@ -34,7 +34,7 @@ export const getDanhSachKT = async (params) => {
  */
 export const addKhenThuong = async (data) => {
   const response = await axios.post(
-    `${BASE_URL}/api/KhenThuong/KhenThuong`,
+    `/api/KhenThuong/KhenThuong`,
     data
   );
   return response.data;
@@ -47,7 +47,7 @@ export const addKhenThuong = async (data) => {
  */
 export const updateKhenThuong = async (maKhenThuong, data) => {
   const response = await axios.put(
-    `${BASE_URL}/api/KhenThuong/CapNhatKT/${maKhenThuong}`,
+    `/api/KhenThuong/CapNhatKT/${maKhenThuong}`,
     data
   );
   return response.data;
@@ -59,7 +59,7 @@ export const updateKhenThuong = async (maKhenThuong, data) => {
  */
 export const deleteKhenThuong = async (maKhenThuong) => {
   const response = await axios.delete(
-    `${BASE_URL}/api/KhenThuong/XoaKT/${maKhenThuong}`
+    `/api/KhenThuong/XoaKT/${maKhenThuong}`
   );
   return response.data;
 };
@@ -70,7 +70,7 @@ export const deleteKhenThuong = async (maKhenThuong) => {
  */
 export const approveKhenThuong = async (maKhenThuong) => {
   const response = await axios.post(
-    `${BASE_URL}/api/KhenThuong/PhepDuyetKT/${maKhenThuong}`
+    `/api/KhenThuong/PhepDuyetKT/${maKhenThuong}`
   );
   return response.data;
 };
@@ -81,7 +81,7 @@ export const approveKhenThuong = async (maKhenThuong) => {
  */
 export const rejectKhenThuong = async (maKhenThuong) => {
   const response = await axios.post(
-    `${BASE_URL}/api/KhenThuong/TuChoiKT/${maKhenThuong}`
+    `/api/KhenThuong/TuChoiKT/${maKhenThuong}`
   );
   return response.data;
 };
@@ -93,7 +93,7 @@ export const rejectKhenThuong = async (maKhenThuong) => {
  */
 export const cancelKhenThuong = async (maKhenThuong, data) => {
   const response = await axios.post(
-    `${BASE_URL}/api/KhenThuong/HuyKT/${maKhenThuong}`,
+    `/api/KhenThuong/HuyKT/${maKhenThuong}`,
     data
   );
   return response.data;
@@ -101,7 +101,7 @@ export const cancelKhenThuong = async (maKhenThuong, data) => {
 
 export const importKhenThuongFromExcel = async (formData) => {
   const res = await axios.post(
-    `${BASE_URL}/api/KhenThuong/ImportKhenThuong`, 
+    `/api/KhenThuong/ImportKhenThuong`, 
     formData,
     {
       headers: { 'Content-Type': 'multipart/form-data' }

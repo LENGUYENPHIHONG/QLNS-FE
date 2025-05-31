@@ -8,7 +8,7 @@ const API_URL = process.env.REACT_APP_API_URL ;
  * @param {{ manv?: string, malbc?: string, includeDeleted?: boolean, onlyDeleted?: boolean }} params
  */
 export const fetchDegreeDetails = (params = {}) => {
-  return axios.get(`${API_URL}/api/ChiTietBangCap/DanhSach`, { params });
+  return axios.get(`/api/ChiTietBangCap/DanhSach`, { params });
 };
 
 /**
@@ -16,7 +16,7 @@ export const fetchDegreeDetails = (params = {}) => {
  * @param {{ MANV: string, MALBC: string, TENBC: string, NOICAP: string, NGAYCAP: string }} data
  */
 export const createDegreeDetail = (data) => {
-  return axios.post(`${API_URL}/api/ChiTietBangCap/Them`, data);
+  return axios.post(`/api/ChiTietBangCap/Them`, data);
 };
 
 /**
@@ -25,7 +25,7 @@ export const createDegreeDetail = (data) => {
  * @param {{ MANV: string, MALBC: string, TENBC: string, NOICAP: string, NGAYCAP: string }} data
  */
 export const updateDegreeDetail = (id, data) => {
-  return axios.put(`${API_URL}/api/ChiTietBangCap/CapNhat/${id}`, data);
+  return axios.put(`/api/ChiTietBangCap/CapNhat/${id}`, data);
 };
 
 /**
@@ -33,11 +33,11 @@ export const updateDegreeDetail = (id, data) => {
  * @param {string} id - Id của ChiTietBangCap
  */
 export const deleteDegreeDetail = (id) => {
-  return axios.delete(`${API_URL}/api/ChiTietBangCap/Xoa/${id}`);
+  return axios.delete(`/api/ChiTietBangCap/Xoa/${id}`);
 };
 
 // Lấy danh sách nhân viên để chọn
 export const fetchEmployees = () => {
-    return axios.get(`${API_URL}/api/NhanVien/DanhSach`);
+    return axios.get(`/api/NhanVien/DanhSach`);
   };
   

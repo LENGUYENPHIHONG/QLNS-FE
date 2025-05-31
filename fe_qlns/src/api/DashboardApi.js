@@ -12,7 +12,7 @@ export const getEmployeeOverview = (year, month, compare = '') => {
   if (year != null) params.year = year;
   if (month != null) params.month = month;
   if (compare) params.compare = compare;
-  return axios.get(`${API_URL}/api/BaoCaoThongKe/ThongKeTongQuan`, { params });
+  return axios.get(`/api/BaoCaoThongKe/ThongKeTongQuan`, { params });
 };
 
 /**
@@ -26,7 +26,7 @@ export const getContractStatistics = (year, month, compare = '') => {
   if (year != null) params.year = year;
   if (month != null) params.month = month;
   if (compare) params.compare = compare;
-  return axios.get(`${API_URL}/api/BaoCaoThongKe/ThongKeHopDong`, { params });
+  return axios.get(`/api/BaoCaoThongKe/ThongKeHopDong`, { params });
 };
 
 /**
@@ -40,7 +40,7 @@ export const getLeaveStatistics = (year, month, compare = '') => {
   if (year != null) params.year = year;
   if (month != null) params.month = month;
   if (compare) params.compare = compare;
-  return axios.get(`${API_URL}/api/BaoCaoThongKe/ThongKeNghiPhep`, { params });
+  return axios.get(`/api/BaoCaoThongKe/ThongKeNghiPhep`, { params });
 };
 
 /**
@@ -54,5 +54,5 @@ export const getDepartmentStatistics = (year, month, compare = '') => {
   if (year != null) params.year = year;
   if (month != null) params.month = month;
   if (compare) params.compare = compare;
-  return axios.get(`${API_URL}/api/BaoCaoThongKe/ThongKeTheoPhongBan`, { params });
+  return axios.get(`/api/BaoCaoThongKe/ThongKeTheoPhongBan`, { params });
 };

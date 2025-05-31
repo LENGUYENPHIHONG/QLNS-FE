@@ -12,29 +12,29 @@ export const fetchInsurances = ({
   trangThai,
   search
 } = {}) =>
-  axios.get(`${API_URL}/api/ChiTietBaoHiem/DanhSachBH`, {
+  axios.get(`/api/ChiTietBaoHiem/DanhSachBH`, {
     params: { page, pageSize, maNhanVien, maLoaiBaoHiem, trangThai, search }
   });
 
 // CREATE
 export const createInsurance = data =>
-  axios.post(`${API_URL}/api/ChiTietBaoHiem/TaoBH`, data);
+  axios.post(`/api/ChiTietBaoHiem/TaoBH`, data);
 
 // UPDATE
 export const updateInsurance = (id, data) =>
-  axios.put(`${API_URL}/api/ChiTietBaoHiem/CapNhatBH/${id}`, data);
+  axios.put(`/api/ChiTietBaoHiem/CapNhatBH/${id}`, data);
 
 // DELETE expired
 export const deleteInsurance = id =>
-  axios.delete(`${API_URL}/api/ChiTietBaoHiem/XoaBH/${id}`);
+  axios.delete(`/api/ChiTietBaoHiem/XoaBH/${id}`);
 
 // RENEW
 export const renewInsurances = payload =>
-  axios.post(`${API_URL}/api/ChiTietBaoHiem/GiaHanBaoHiem`, payload);
+  axios.post(`/api/ChiTietBaoHiem/GiaHanBaoHiem`, payload);
 
 // LOOKUPS
 export const getEmployees = () =>
-  axios.get(`${API_URL}/api/NhanVien/DanhSachNV`);
+  axios.get(`/api/NhanVien/DanhSachNV`);
 
 export const getInsuranceTypes = () =>
-  axios.get(`${API_URL}/api/LoaiBaoHiem/DanhSachLBH`);
+  axios.get(`/api/LoaiBaoHiem/DanhSachLBH`);
