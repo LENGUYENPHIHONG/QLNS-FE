@@ -17,10 +17,9 @@ const EmployeeDetailTab = ({ employeeId }) => {
     setLoading(true);
     try {
       const res = await getEmployeeDetail(employeeId);
-      if (res.data?.Success)
-        setEmployee(res.data.Data);
+      if (res.data?.Success) setEmployee(res.data.Data);
       else toast.error("Không tải được chi tiết nhân viên");
-      console.log("Employee Detail:", employee.ANH);
+      console.log("Employee Detail:", res);
     } catch {
       toast.error("Lỗi khi gọi API chi tiết");
     } finally {
@@ -44,7 +43,6 @@ const EmployeeDetailTab = ({ employeeId }) => {
             />
           : <div style={{ width:200, height:240, background:'#f0f0f0', borderRadius:8 }} />
         }
-        
       </Col>
       <Col span={18}>
         <Descriptions column={2} bordered size="small">
