@@ -38,7 +38,7 @@ export default function NotificationDropdown() {
     setLoading(true);
     try {
       const { data } = await axios.get(
-        `${process.env.REACT_APP_API_URL}/api/ThongBao/unread`,
+        `/api/ThongBao/unread`,
         { withCredentials: true }
       );
       setUnread(data.Items);
@@ -54,7 +54,7 @@ export default function NotificationDropdown() {
     setLoading(true);
     try {
       const { data } = await axios.get(
-        `${process.env.REACT_APP_API_URL}/api/ThongBao`,
+        `/api/ThongBao`,
         { withCredentials: true }
       );
       setAllNoti(data);
@@ -74,7 +74,7 @@ export default function NotificationDropdown() {
     setLoading(true);
     try {
       await axios.put(
-        `${process.env.REACT_APP_API_URL}/api/ThongBao/${item.MaThongBao}/read`,
+        `/api/ThongBao/${item.MaThongBao}/read`,
         null,
         { withCredentials: true }
       );
@@ -98,7 +98,7 @@ export default function NotificationDropdown() {
     setLoading(true);
     try {
       const res = await axios.delete(
-        `${process.env.REACT_APP_API_URL}/api/ThongBao/read`,
+        `/api/ThongBao/read`,
         { withCredentials: true }
       );
       if (res.data?.DeletedCount > 0) {
