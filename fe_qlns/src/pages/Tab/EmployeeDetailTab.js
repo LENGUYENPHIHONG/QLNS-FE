@@ -19,11 +19,13 @@ const EmployeeDetailTab = ({ employeeId }) => {
       const res = await getEmployeeDetail(employeeId);
       if (res.data?.Success) setEmployee(res.data.Data);
       else toast.error("Không tải được chi tiết nhân viên");
+      console.log("Employee Detail:", res);
     } catch {
       toast.error("Lỗi khi gọi API chi tiết");
     } finally {
       setLoading(false);
     }
+    
   };
 
   if (loading) return <Spin />;
