@@ -168,16 +168,16 @@ export default function DepartmentTransferPage() {
 
     // Submit request form
     const handleFormSubmit = async (values) => {
-        try {
-            await submitTransferRequest(values);
-            toast.success('Yêu cầu được gửi thành công!');
-            setFormVisible(false);
-            fetchRequests();
-        } catch (err) {
-            console.error(err);
-            toast.error('Lỗi khi gửi yêu cầu.');
-        }
-    };
+    try {
+        await submitTransferRequest(values);
+        toast.success('Yêu cầu được gửi thành công!');
+        setFormVisible(false);
+        fetchRequests();
+    } catch (err) {
+        console.error("Submit error:", err.response?.data || err.message);
+        toast.error(`Lỗi khi gửi yêu cầu: ${err.response?.data?.message || err.message}`);
+    }
+};
 
     return (
         <div>
