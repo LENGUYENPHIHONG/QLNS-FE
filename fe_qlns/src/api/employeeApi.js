@@ -12,7 +12,7 @@ export const createEmployee = (data) => axios.post(`/api/NhanVien/TaoNV`, data);
 
 export const fetchEmployees = (
   page = 1,
-  pageSize = 10,
+  pageSize = 20,
   search = null,
   status = null,
   showDeleted = false

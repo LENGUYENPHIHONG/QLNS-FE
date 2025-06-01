@@ -60,7 +60,7 @@ const { Content } = Layout;
 const { TabPane } = Tabs;
 
 const EmployeeListPage = () => {
-  const [pagination, setPagination] = useState({ current: 1, pageSize: 20, total: 0 });
+  const [pagination, setPagination] = useState({ current: 1, pageSize: 10, total: 0 });
   const [employees, setEmployees] = useState([]);
   const [filteredEmployees, setFilteredEmployees] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
@@ -392,7 +392,14 @@ const [showDeleted, setShowDeleted] = useState(false);
           dataSource={filteredEmployees}
           rowKey='id'
           loading={loading}
-          pagination={{ current: pagination.current, pageSize: pagination.pageSize, total: pagination.total, onChange: loadEmployees }}
+          pagination={{
+    current: pagination.current,
+    pageSize: pagination.pageSize,
+    total: pagination.total,
+    onChange: loadEmployees,
+    pageSizeOptions: ['10'], // Chỉ cho phép chọn 10
+    showSizeChanger: false // Vô hiệu hóa tùy chọn thay đổi số lượng
+  }}
         />
 
         <EmployeeAddModal
