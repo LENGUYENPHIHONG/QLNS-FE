@@ -1,6 +1,6 @@
 // File: EmployeeSkillsPage.jsx
 import React, { useEffect, useState } from 'react';
-import { Form, Select, Button, Table, Popconfirm, message } from 'antd';
+import { Form, Select, Button, Table, Popconfirm, message, Layout } from 'antd';
 import { DeleteOutlined } from '@ant-design/icons';
 import {
   fetchSkillTypes,
@@ -115,7 +115,7 @@ export default function EmployeeSkillsPage() {
   ];
 
   return (
-    <div>
+    <Layout style={{ background: '#fff', padding: 24 }}>
       <Form form={form} layout="inline">
         <Form.Item name="MaNV" label="Nhân viên" rules={[{ required: true, message: 'Chọn nhân viên' }]}>  
           <Select
@@ -163,6 +163,6 @@ export default function EmployeeSkillsPage() {
         dataSource={assigned}
         style={{ marginTop: 16 }}
       />
-    </div>
+    </Layout>
   );
 }
