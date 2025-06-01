@@ -144,6 +144,7 @@ export default function ContractManagement() {
         TRANGTHAI: 'Chờ phê duyệt'
       };
       const createRes = await createContract(payload);
+      console.log('createRes', payload);
       if (createRes.data?.Success) {
         toast.success(createRes.data.Message);
         setAddModalVisible(false);
