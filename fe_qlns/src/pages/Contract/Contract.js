@@ -152,6 +152,7 @@ export default function ContractManagement() {
       } else {
         toast.error(createRes.data?.Message);
       }
+      console.log('createRes', createRes);
     } catch (err) {
       toast.error(err.response?.data?.Message || 'Lỗi thêm hợp đồng');
     } finally {
