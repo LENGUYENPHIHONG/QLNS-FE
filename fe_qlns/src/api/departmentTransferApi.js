@@ -8,15 +8,7 @@ const API_URL = process.env.REACT_APP_API_URL;
 export const getTransferRequests = () => axios.get(`/api/ChiTietPhongBan`);
 
 // Gửi yêu cầu điều chuyển mới
-export const submitTransferRequest = async (data) => {
-    try {
-        const response = await axios.post(`/api/ChiTietPhongBan/ChuyenPhongBan`, data);
-        return response;
-    } catch (error) {
-        console.error("Error in submitTransferRequest:", error.response?.data || error.message);
-        throw error;
-    }
-};
+export const submitTransferRequest = (data) => axios.post(`/api/ChiTietPhongBan/ChuyenPhongBan`, data);
 
 // Phê duyệt yêu cầu điều chuyển (truyền id trong URL)
 export const approveTransferRequest = (id) => axios.post(`/api/ChiTietPhongBan/PheDuyetChuyenPB/${id}`);
