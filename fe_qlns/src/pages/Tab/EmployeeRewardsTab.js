@@ -205,9 +205,9 @@ export default function EmployeeRewardsTab({ employeeId }) {
           allowClear
           onSearch={onSearch}
         />
-        <Upload beforeUpload={handleImport} showUploadList={false} accept=".xlsx,.xls">
+        {/* <Upload beforeUpload={handleImport} showUploadList={false} accept=".xlsx,.xls">
           <Button icon={<UploadOutlined />}>Import Excel</Button>
-        </Upload>
+        </Upload> */}
         <Button type="primary" onClick={() => openModal(null)} icon={<PlusOutlined />}>
           Thêm Khen Thưởng
         </Button>

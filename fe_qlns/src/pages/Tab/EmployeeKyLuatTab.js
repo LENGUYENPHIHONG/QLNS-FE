@@ -197,13 +197,13 @@ export default function EmployeeKyLuatTab({ employeeId }) {
           onSearch={onSearch}
           style={{ width: 240 }}
         />
-        <Upload
+        {/* <Upload
           accept=".xlsx,.xls"
           showUploadList={false}
           beforeUpload={handleImport}
         >
           <Button icon={<UploadOutlined />}>Import Excel</Button>
-        </Upload>
+        </Upload> */}
         <Button type="primary" icon={<PlusOutlined />} onClick={()=>openModal(null)}>
           Thêm Kỷ luật
         </Button>
