@@ -2,7 +2,7 @@
     "rewrites": [
         {
             "source": "/api/:path*",
-            "destination": "http://ducthanh16013-001-site1.qtempurl.com/api/:path*"
+            "destination": "http://ducthanh1601003-001-site1.qtempurl.com/api/:path*"
         },
         {
             "source": "/(.*)",
